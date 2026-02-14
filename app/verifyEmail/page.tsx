@@ -3,6 +3,8 @@
 import React, { useEffect, useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
+import { ArrowLeft } from "lucide-react";
 
 const Page = () => {
   const { user } = useAuth();
@@ -57,6 +59,14 @@ const Page = () => {
   if (user) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen p-4 bg-gradient-to-b from-green-50 to-white">
+        {/* Back to Home */}
+        <Link
+          href="/"
+          className="inline-flex items-center gap-2 text-gray-700 hover:text-gray-900 mb-8"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          <span className="text-sm">Back to Home</span>
+        </Link>
         <div className="max-w-md w-full bg-white rounded-2xl shadow-lg p-8 text-center space-y-6">
           {/* Success Icon */}
           <div className="flex justify-center">

@@ -64,12 +64,7 @@ export const useAuth = () => {
       const response = await axiosInstance.get(
         `/auth/verify-email?token=${token}`,
       );
-      console.log(response.data);
-
-      // Update user's verified status in Redux store
-      if (user) {
-        dispatch(updateUser({ verified: true }));
-      }
+      console.log(response);
 
       setVerificationStatus({ loading: false, error: null, success: true });
       return { success: true, message: response.data.message };
