@@ -1,17 +1,25 @@
-'use client';
+"use client";
 
-import { useDispatch, useSelector } from 'react-redux';
-import { RootState, AppDispatch } from '@/redux/store';
-import { setCredentials, logout } from '@/redux/slices/authSlice';
-import { User, AuthResponse } from '@/types/user';
-import axiosInstance from '@/lib/axios';
+import { useDispatch, useSelector } from "react-redux";
+import { RootState, AppDispatch } from "@/redux/store";
+import { setCredentials, logout } from "@/redux/slices/authSlice";
+import { User, AuthResponse } from "@/types/user";
+import axiosInstance from "@/lib/axios";
 
 export const useAuth = () => {
   const dispatch = useDispatch<AppDispatch>();
-  const { user, token, isAuthenticated } = useSelector((state: RootState) => state.auth);
+  const { user, token, isAuthenticated } = useSelector(
+    (state: RootState) => state.auth,
+  );
 
-  const login = async (email: string, password: string): Promise<AuthResponse> => {
-    const response = await axiosInstance.post<AuthResponse>('/auth/login', { email, password });
+  const login = async (
+    email: string,
+    password: string,
+  ): Promise<AuthResponse> => {
+    const response = await axiosInstance.post<AuthResponse>("/auth/login", {
+      email,
+      password,
+    });
     dispatch(setCredentials(response.data));
     return response.data;
   };
@@ -20,16 +28,19 @@ export const useAuth = () => {
     fullName: string,
     email: string,
     password: string,
-    role: 'vendor' | 'customer',
+    role: "VENDOR" | "CUSTOMER",
     storeName?: string,
-    phoneNumber?: string
+    phone?: string,
+    location?: string,
   ): Promise<AuthResponse> => {
-    const payload: any = { fullName, email, password, role };
-    if (role === 'vendor') {
+    const payload: any = { fullName, email, password, role, phone, location };
+    if (role === "VENDOR") {
       payload.storeName = storeName;
-      payload.phoneNumber = phoneNumber;
     }
-    const response = await axiosInstance.post<AuthResponse>('/auth/signup', payload);
+    const response = await axiosInstance.post<AuthResponse>(
+      "/auth/register",
+      payload,
+    );
     dispatch(setCredentials(response.data));
     return response.data;
   };
@@ -47,4 +58,3 @@ export const useAuth = () => {
     logout: handleLogout,
   };
 };
-
