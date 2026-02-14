@@ -1,4 +1,4 @@
-export type UserRole = 'vendor' | 'customer';
+export type UserRole = 'VENDOR' | 'CUSTOMER';
 
 export interface User {
   id: string;
@@ -7,6 +7,11 @@ export interface User {
   role: UserRole;
   storeName?: string;
   phoneNumber?: string;
+  vendor?: {
+    storeSlug: string;
+    storeName: string;
+  },
+  verified?: boolean;
   createdAt: string;
   updatedAt: string;
 }
