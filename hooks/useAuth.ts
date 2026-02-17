@@ -47,7 +47,7 @@ export const useAuth = () => {
     if (role === "VENDOR") {
       payload.storeName = storeName;
     }
-    const response = await axiosInstance.post<AuthResponse>(
+    const response = await axiosInstance.post<AuthResponse>( 
       "/auth/register",
       payload,
     );

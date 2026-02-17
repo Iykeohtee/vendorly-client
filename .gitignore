@@ -36,7 +36,6 @@ yarn-error.log*
 next-env.d.ts
 
 # Folders with code coming later (keep structure, ignore code)
-/app/dashboard/page.tsx
 /app/dashboard/add-product/**
 /app/explore/page.tsx
 /app/shop/**
