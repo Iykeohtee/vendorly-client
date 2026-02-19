@@ -12,7 +12,6 @@ import { Loader2 } from "lucide-react";
 export default function StorePage() {
   const params = useParams();
   const storeSlug = params.storeSlug as string;
-  const { showToast } = useToast();
 
   const {
     currentStore,
