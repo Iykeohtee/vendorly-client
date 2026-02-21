@@ -21,8 +21,8 @@ export interface CreateProductDto {
   price: number;
   quantity: number;
   category: string;
-  images: string[];
 }
+
 
 export interface UpdateProductDto extends Partial<CreateProductDto> {
   id: string;

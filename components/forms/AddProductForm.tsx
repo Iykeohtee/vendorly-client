@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -11,7 +11,6 @@ import Input from "@/components/ui/Input";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/Card";
 import { useProduct } from "@/hooks/useProducts";
 import { Upload, X, Image as ImageIcon } from "lucide-react";
-import axiosInstance from "@/lib/axios";
 
 const productSchema = z.object({
   name: z.string().min(1, "Product name is required"),
@@ -19,7 +18,9 @@ const productSchema = z.object({
   price: z.number().min(0, "Price must be positive"),
   category: z.string().min(1, "Category is required"),
   quantity: z.number().min(0, "Quantity must be positive"),
-  images: z.any(),
+  images: z
+    .any()
+    .refine((files) => files?.length > 0, "At least one image is required"),
 });
 
 type ProductFormData = z.infer<typeof productSchema>;
@@ -27,6 +28,7 @@ type ProductFormData = z.infer<typeof productSchema>;
 export default function AddProductForm() {
   const [isLoading, setIsLoading] = useState(false);
   const [imagePreviews, setImagePreviews] = useState<string[]>([]);
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const { createProduct } = useProduct();
   const { showToast } = useToast();
   const router = useRouter();
@@ -36,64 +38,91 @@ export default function AddProductForm() {
     handleSubmit,
     formState: { errors },
     setValue,
+    reset,
   } = useForm<ProductFormData>({
     resolver: zodResolver(productSchema),
+    defaultValues: {
+      name: "",
+      description: "",
+      price: 0,
+      category: "",
+      quantity: 0,
+      images: [],
+    },
   });
+
+  // Clean up previews when component unmounts
+  useEffect(() => {
+    return () => {
+      imagePreviews.forEach((preview) => URL.revokeObjectURL(preview));
+    };
+  }, [imagePreviews]);
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (files) {
       const fileArray = Array.from(files);
-      setValue("images", fileArray as any);
+      setSelectedFiles(fileArray);
+      setValue("images", fileArray);
 
-      // Create previews
+      // Clean up old previews
+      imagePreviews.forEach((preview) => URL.revokeObjectURL(preview));
+
+      // Create new previews
       const previews = fileArray.map((file) => URL.createObjectURL(file));
       setImagePreviews(previews);
     }
   };
 
   const removeImage = (indexToRemove: number) => {
-    setImagePreviews((prev) => {
-      const newPreviews = prev.filter((_, index) => index !== indexToRemove);
-      return newPreviews;
-    });
-  };
-
-  const uploadImages = async (files: File[]): Promise<string[]> => {
-    const formData = new FormData();
-    files.forEach((file) => {
-      formData.append("images", file);
-    });
-
-    const response = await axiosInstance.post<{ urls: string[] }>(
-      "upload/images",
-      formData,
-      {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      },
+    // Remove from selected files
+    const newFiles = selectedFiles.filter(
+      (_, index) => index !== indexToRemove,
     );
+    setSelectedFiles(newFiles);
+    setValue("images", newFiles);
 
-    return response.data.urls;
+    // Remove preview and clean up URL
+    URL.revokeObjectURL(imagePreviews[indexToRemove]);
+    const newPreviews = imagePreviews.filter(
+      (_, index) => index !== indexToRemove,
+    );
+    setImagePreviews(newPreviews);
   };
 
   const onSubmit = async (data: ProductFormData) => {
     try {
       setIsLoading(true);
 
-      const imageUrls = await uploadImages(data.images);
-      await createProduct.mutateAsync({
-        name: data.name,
-        description: data.description,
-        price: data.price,
-        quantity: data.quantity,
-        images: imageUrls,
-        category: data.category,
+      // Create FormData and append all fields
+      const formData = new FormData();
+      formData.append("name", data.name);
+      formData.append("description", data.description);
+      formData.append("price", data.price.toString());
+      formData.append("quantity", data.quantity.toString());
+      formData.append("category", data.category);
+
+      // Append each image file - this matches your backend's expected field name "images"
+      selectedFiles.forEach((file) => {
+        formData.append("images", file);
       });
+
+      // Debug: Log FormData contents
+      console.log("Submitting form with files:", selectedFiles.length);
+      for (let pair of formData.entries()) {
+        console.log(pair[0], pair[1]);
+      }
+
+      // Send everything in one request to your backend
+      await createProduct.mutateAsync(formData);
+
       showToast("Product added successfully!", "success");
       router.push("/dashboard");
+
+      // Clean up previews after successful submission
+      imagePreviews.forEach((preview) => URL.revokeObjectURL(preview));
     } catch (error: any) {
+      console.error("Submission error:", error);
       showToast(
         error.response?.data?.message || "Failed to add product",
         "error",
@@ -212,7 +241,7 @@ export default function AddProductForm() {
           {/* Category */}
           <div className="space-y-2">
             <label
-              htmlFor="name"
+              htmlFor="category"
               className="block text-sm font-medium text-gray-700"
             >
               Category

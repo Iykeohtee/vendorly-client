@@ -41,17 +41,17 @@ export const useProduct = () => {
   };
 
   const createProduct = useMutation({
-    mutationFn: async (data: CreateProductDto) => {
+    mutationFn: async (formData: FormData) => {
       const response = await axiosInstance.post<Product>(
         "/products/create-product",
-        data,
+        formData,
         {
           headers: {
-            "Content-Type": "application/json",
+            "Content-Type": "multipart/form-data",
           },
         },
       );
-      console.log(response.data);
+
       dispatch(setProducts([response.data]));
       return response.data;
     },
@@ -64,20 +64,15 @@ export const useProduct = () => {
   });
 
   const updateProduct = useMutation({
-    mutationFn: async (data: UpdateProductDto) => {
-      const formData = new FormData();
-      if (data.name) formData.append("name", data.name);
-      if (data.description) formData.append("description", data.description);
-      if (data.price) formData.append("price", data.price.toString());
-      if (data.quantity) formData.append("quantity", data.quantity.toString());
-      if (data.images) {
-        data.images.forEach((image) => {
-          formData.append("images", image);
-        });
-      }
-
+    mutationFn: async ({
+      id,
+      formData,
+    }: {
+      id: string;
+      formData: FormData;
+    }) => {
       const response = await axiosInstance.put<Product>(
-        `/products/${data.id}`,
+        `/products/${id}`,
         formData,
         {
           headers: {
