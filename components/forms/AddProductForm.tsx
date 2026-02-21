@@ -11,6 +11,7 @@ import Input from "@/components/ui/Input";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/Card";
 import { useProduct } from "@/hooks/useProducts";
 import { Upload, X, Image as ImageIcon } from "lucide-react";
+import axiosInstance from "@/lib/axios";
 
 const productSchema = z.object({
   name: z.string().min(1, "Product name is required"),
@@ -58,16 +59,37 @@ export default function AddProductForm() {
     });
   };
 
+  const uploadImages = async (files: File[]): Promise<string[]> => {
+    const formData = new FormData();
+    files.forEach((file) => {
+      formData.append("images", file);
+    });
+
+    const response = await axiosInstance.post<{ urls: string[] }>(
+      "upload/images",
+      formData,
+      {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      },
+    );
+
+    return response.data.urls;
+  };
+
   const onSubmit = async (data: ProductFormData) => {
     try {
       setIsLoading(true);
+
+      const imageUrls = await uploadImages(data.images);
       await createProduct.mutateAsync({
         name: data.name,
         description: data.description,
         price: data.price,
         quantity: data.quantity,
-        images: data.images || [],
-        category: data.category, 
+        images: imageUrls,
+        category: data.category,
       });
       showToast("Product added successfully!", "success");
       router.push("/dashboard");
@@ -187,14 +209,13 @@ export default function AddProductForm() {
             )}
           </div>
 
-
           {/* Category */}
           <div className="space-y-2">
             <label
               htmlFor="name"
               className="block text-sm font-medium text-gray-700"
             >
-              Category 
+              Category
             </label>
             <Input
               id="category"
@@ -204,7 +225,9 @@ export default function AddProductForm() {
               {...register("category")}
             />
             {errors.category && (
-              <p className="text-red-500 text-sm mt-1">{errors.category.message}</p>
+              <p className="text-red-500 text-sm mt-1">
+                {errors.category.message}
+              </p>
             )}
           </div>
 
