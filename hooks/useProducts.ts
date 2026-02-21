@@ -15,7 +15,6 @@ export const useProduct = () => {
     (state: RootState) => state.products,
   );
 
- 
   const useProducts = (vendorId?: string) => {
     return useQuery({
       queryKey: ["products", vendorId],
@@ -28,7 +27,6 @@ export const useProduct = () => {
     });
   };
 
- 
   const useSingleProduct = (productId: string) => {
     return useQuery({
       queryKey: ["product", productId],
@@ -42,41 +40,29 @@ export const useProduct = () => {
     });
   };
 
-  
   const createProduct = useMutation({
     mutationFn: async (data: CreateProductDto) => {
-      const formData = new FormData();
-      formData.append("name", data.name);
-      formData.append("description", data.description);
-      formData.append("price", data.price.toString());
-      formData.append("quantity", data.quantity.toString());
-      formData.append("category", data.category.toString());
-      data.images.forEach((image) => {
-        formData.append("images", image);
-      });
-
       const response = await axiosInstance.post<Product>(
         "/products/create-product",
-        formData,
+        data,
         {
           headers: {
-            "Content-Type": "multipart/form-data",
+            "Content-Type": "application/json",
           },
         },
       );
-      console.log(response.data)
-      dispatch(setProducts([response.data])); 
+      console.log(response.data);
+      dispatch(setProducts([response.data]));
       return response.data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["products"] }); 
+      queryClient.invalidateQueries({ queryKey: ["products"] });
     },
     onError: (error) => {
       console.error("Error creating product:", error);
-    }
+    },
   });
 
-  
   const updateProduct = useMutation({
     mutationFn: async (data: UpdateProductDto) => {
       const formData = new FormData();
@@ -120,9 +106,9 @@ export const useProduct = () => {
     products,
     selectedProduct,
     useProducts,
-    useSingleProduct, 
-    createProduct, 
-    updateProduct, 
-    deleteProduct, 
+    useSingleProduct,
+    createProduct,
+    updateProduct,
+    deleteProduct,
   };
 };
