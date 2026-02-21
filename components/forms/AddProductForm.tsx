@@ -102,17 +102,11 @@ export default function AddProductForm() {
       formData.append("quantity", data.quantity.toString());
       formData.append("category", data.category);
 
-      // Append each image file - this matches your backend's expected field name "images"
+      // Append each image file"
       selectedFiles.forEach((file) => {
         formData.append("images", file);
       });
-
-      // Debug: Log FormData contents
-      console.log("Submitting form with files:", selectedFiles.length);
-      for (let pair of formData.entries()) {
-        console.log(pair[0], pair[1]);
-      }
-
+  
       // Send everything in one request to your backend
       await createProduct.mutateAsync(formData);
 
