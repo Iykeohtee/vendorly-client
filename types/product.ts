@@ -20,7 +20,8 @@ export interface CreateProductDto {
   description: string;
   price: number;
   quantity: number;
-  images: File[];
+  category: string;
+  images: string[];
 }
 
 export interface UpdateProductDto extends Partial<CreateProductDto> {

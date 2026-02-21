@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
@@ -120,8 +120,94 @@ export default function DashboardLayout({
 }) {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
   const pathname = usePathname();
   const { user, logout } = useAuth();
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  // During SSR and initial hydration, render without user-dependent content
+  if (!mounted) {
+    return (
+      <TooltipProvider>
+        <div className="min-h-screen bg-gray-50">
+          {/* Sidebar */}
+          <aside className="fixed top-0 left-0 z-30 h-full bg-white border-r border-gray-200 w-64">
+            {/* Sidebar header */}
+            <div className="flex items-center justify-between h-16 px-4 border-b border-gray-200">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 bg-green-500 rounded-lg flex items-center justify-center">
+                  <span className="text-white font-bold text-lg">V</span>
+                </div>
+                <span className="font-bold text-gray-800">Vendorly</span>
+              </div>
+            </div>
+
+            {/* Navigation */}
+            <nav className="p-4 space-y-1">
+              {navItems.map((item) => {
+                const isActive = pathname === item.href;
+                return (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    className={cn(
+                      "flex items-center gap-3 px-3 py-2 rounded-lg transition-colors",
+                      isActive
+                        ? "bg-green-50 text-green-600"
+                        : "text-gray-700 hover:bg-gray-100",
+                    )}
+                  >
+                    <item.icon
+                      className={cn(
+                        "h-5 w-5 flex-shrink-0",
+                        isActive && "text-green-600",
+                      )}
+                    />
+                    <span className="flex-1 text-sm font-medium">
+                      {item.title}
+                    </span>
+                  </Link>
+                );
+              })}
+            </nav>
+
+            {/* Settings and Logout */}
+            <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-gray-200">
+              <div className="space-y-1">
+                <div className="flex items-center gap-3 px-3 py-2 rounded-lg text-gray-700">
+                  <Settings className="h-5 w-5 flex-shrink-0" />
+                  <span className="text-sm">Settings</span>
+                </div>
+                <div className="flex items-center gap-3 px-3 py-2 rounded-lg text-gray-700">
+                  <LogOut className="h-5 w-5 flex-shrink-0" />
+                  <span className="text-sm">Logout</span>
+                </div>
+              </div>
+            </div>
+          </aside>
+
+          {/* Main content */}
+          <div className="lg:ml-64">
+            {/* Top bar */}
+            <header className="sticky top-0 z-10 bg-white border-b border-gray-200 h-16">
+              <div className="flex items-center justify-between h-16 px-4">
+                <button className="p-2 rounded-lg lg:hidden">
+                  <Menu className="h-5 w-5 text-gray-600" />
+                </button>
+                <div className="flex-1" />
+              </div>
+            </header>
+
+            {/* Page content */}
+            <main className="p-6">{children}</main>
+          </div>
+        </div>
+      </TooltipProvider>
+    );
+  }
 
   return (
     <TooltipProvider>
@@ -307,7 +393,7 @@ export default function DashboardLayout({
                       </TooltipContent>
                     </Tooltip>
 
-                    {/* Copy button (already has its own tooltip) */}
+                    {/* Copy button */}
                     <CopyButton
                       storeUrl={`${process.env.NEXT_PUBLIC_CLIENT_URL}/${user.vendor.storeSlug}`}
                     />

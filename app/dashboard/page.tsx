@@ -1,13 +1,65 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 import { Package, ShoppingCart, Users, DollarSign } from "lucide-react";
 import { useSelector } from "react-redux";
 import { RootState } from "@/redux/store";
 
 export default function DashboardPage() {
+  const [mounted, setMounted] = useState(false);
+  const { user } = useSelector((state: RootState) => state.auth);
 
-    const { user } = useSelector((state: RootState) => state.auth);
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  // Show loading skeleton during SSR and initial hydration
+  if (!mounted) {
+    return (
+      <div className="space-y-6">
+        {/* Welcome section skeleton */}
+        <div>
+          <div className="h-8 w-64 bg-gray-200 rounded animate-pulse"></div>
+          <div className="h-4 w-96 bg-gray-200 rounded animate-pulse mt-2"></div>
+        </div>
+
+        {/* Stats cards skeleton */}
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+          {[1, 2, 3, 4].map((i) => (
+            <Card key={i}>
+              <CardContent className="p-6">
+                <div className="h-20 bg-gray-200 rounded animate-pulse"></div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+
+        {/* Recent orders skeleton */}
+        <Card>
+          <CardHeader>
+            <div className="h-6 w-32 bg-gray-200 rounded animate-pulse"></div>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {[1, 2, 3, 4, 5].map((i) => (
+                <div key={i} className="flex items-center justify-between">
+                  <div className="flex items-center gap-4">
+                    <div className="w-10 h-10 bg-gray-200 rounded-lg animate-pulse"></div>
+                    <div>
+                      <div className="h-4 w-32 bg-gray-200 rounded animate-pulse"></div>
+                      <div className="h-3 w-24 bg-gray-200 rounded animate-pulse mt-2"></div>
+                    </div>
+                  </div>
+                  <div className="h-6 w-16 bg-gray-200 rounded-full animate-pulse"></div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -15,7 +67,11 @@ export default function DashboardPage() {
       <div>
         <h1 className="text-2xl font-bold text-gray-800">Dashboard Overview</h1>
         <p className="text-gray-600 mt-1">
-          Welcome back! <span className="text-green-500 font-bold">{user?.vendor?.storeName}</span> Here's what's happening with your store today.
+          Welcome back!{" "}
+          <span className="text-green-500 font-bold">
+            {user?.vendor?.storeName || "Guest"}
+          </span>{" "}
+          Here's what's happening with your store today.
         </p>
       </div>
 

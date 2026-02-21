@@ -1,22 +1,16 @@
-// app/(main)/dashboard/products/page.tsx
 "use client";
 
 import { useState } from "react";
 import { Plus, Search, Edit, Trash2 } from "lucide-react";
 import Button from "@/components/ui/Button";
 import Input from "@/components/ui/Input";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
+import { Card, CardContent } from "@/components/ui/Card";
+import { useProduct } from "@/hooks/useProducts";
+import Link from "next/link";
 
 export default function ProductsPage() {
   const [searchTerm, setSearchTerm] = useState("");
-
-  // This would come from your API
-  const products = [
-    { id: 1, name: "Pink Ankara Gown", price: 45000, stock: 23, sales: 45 },
-    { id: 2, name: "Men's Native Set", price: 35000, stock: 12, sales: 28 },
-    { id: 3, name: "Beaded Necklace", price: 8500, stock: 56, sales: 112 },
-    { id: 4, name: "Leather Sandals", price: 12500, stock: 34, sales: 67 },
-  ];
+  const { products } = useProduct();
 
   return (
     <div className="space-y-6">
@@ -26,10 +20,12 @@ export default function ProductsPage() {
           <h1 className="text-2xl font-bold text-gray-800">Products</h1>
           <p className="text-gray-600 mt-1">Manage your product inventory</p>
         </div>
-        <Button className="bg-green-500 hover:bg-green-600 text-white inline-flex items-center gap-2">
-          <Plus className="h-4 w-4" />
-          Add Product
-        </Button>
+        <Link href="/dashboard/products/addProduct">
+          <Button className="bg-green-500 hover:bg-green-600 text-white inline-flex items-center gap-2">
+            <Plus className="h-4 w-4" />
+            Add Product
+          </Button>
+        </Link>
       </div>
 
       {/* Search and filter */}
@@ -89,12 +85,12 @@ export default function ProductsPage() {
                     </td>
                     <td className="px-6 py-4">
                       <div className="text-sm text-gray-900">
-                        {product.stock}
+                        {/* {product.stock} */}
                       </div>
                     </td>
                     <td className="px-6 py-4">
                       <div className="text-sm text-gray-900">
-                        {product.sales}
+                        {/* {product.sales} */}
                       </div>
                     </td>
                     <td className="px-6 py-4 text-right">

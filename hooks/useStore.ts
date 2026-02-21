@@ -1,4 +1,3 @@
-// hooks/useStore.ts
 "use client";
 
 import { useDispatch, useSelector } from "react-redux";
@@ -9,13 +8,13 @@ import {
   setError,
   clearStore,
   setSelectedProduct,
-  updateProductQuantity,
   StoreData,
   StoreProduct,
 } from "@/redux/slices/storeSlice";
-import axiosInstance from "@/lib/axios";
-import { useState } from "react";
 import { useToast } from "@/components/ui/Toast";
+import { storeService } from "@/app/services/store.service";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useEffect } from "react";
 
 interface UseStoreReturn {
   // State
@@ -45,47 +44,87 @@ interface UseStoreReturn {
   getProductQuantity: (productId: string) => number;
 }
 
-export const useStore = (): UseStoreReturn => {
+export const useStore = (storeSlug?: string): UseStoreReturn => {
   const dispatch = useDispatch<AppDispatch>();
+  const queryClient = useQueryClient();
   const { showToast } = useToast();
 
-  const { currentStore, loading, error, selectedProduct } = useSelector(
+  const { currentStore, selectedProduct } = useSelector(
     (state: RootState) => state.store,
   );
 
-  const [requestStatus, setRequestStatus] = useState<{
-    loading: boolean;
-    error: string | null;
-  }>({
-    loading: false,
-    error: null,
+  // Use proper React Query for automatic fetching when slug is provided
+  const {
+    data: storeData,
+    isLoading,
+    error: queryError,
+    refetch,
+  } = useQuery({
+    queryKey: ["store", storeSlug],
+    queryFn: () => {
+      if (!storeSlug) throw new Error("Store slug not provided");
+      return storeService.getStoreBySlug(storeSlug);
+    },
+    enabled: !!storeSlug, // Only run if storeSlug is provided
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    gcTime: 10 * 60 * 1000, // 10 minutes cache
+    retry: 1, // Only retry once on failure
   });
 
+  // Update Redux when data changes
+  useEffect(() => {
+    if (storeData) {
+      dispatch(setStore(storeData));
+    }
+  }, [storeData, dispatch]);
+
+  // Handle errors
+  useEffect(() => {
+    if (queryError) {
+      const errorMessage =
+        (queryError as any)?.response?.data?.message ||
+        (queryError as Error)?.message ||
+        "Failed to load store";
+      dispatch(setError(errorMessage));
+      showToast(errorMessage, "error");
+    }
+  }, [queryError, dispatch, showToast]);
+
   /**
-   * Fetch store by slug (public endpoint)
+   * Fetch store by slug - now uses the existing query or refetches
    */
-  const getStoreBySlug = async (
-    storeSlug: string,
-  ): Promise<StoreData | null> => {
+  const getStoreBySlug = async (slug: string): Promise<StoreData | null> => {
+    // If we already have this store in cache, return it
+    const cachedData = queryClient.getQueryData<StoreData>(["store", slug]);
+    if (cachedData) {
+      dispatch(setStore(cachedData));
+      return cachedData;
+    }
+
     dispatch(setLoading(true));
-    setRequestStatus({ loading: true, error: null });
 
     try {
-      const response = await axiosInstance.get<StoreData>(
-        `/store/${storeSlug}`,
-      );
+      // Use refetch if this is the current storeSlug, otherwise use fetchQuery
+      let data: StoreData;
 
-      dispatch(setStore(response.data));
-      setRequestStatus({ loading: false, error: null });
+      if (slug === storeSlug) {
+        const result = await refetch();
+        data = result.data!;
+      } else {
+        data = await queryClient.fetchQuery({
+          queryKey: ["store", slug],
+          queryFn: () => storeService.getStoreBySlug(slug),
+          staleTime: 5 * 60 * 1000,
+        });
+      }
 
-      return response.data;
+      dispatch(setStore(data));
+      return data;
     } catch (error: any) {
       const errorMessage =
         error.response?.data?.message || "Failed to load store";
 
       dispatch(setError(errorMessage));
-      setRequestStatus({ loading: false, error: errorMessage });
-
       showToast(errorMessage, "error");
       return null;
     } finally {
@@ -98,6 +137,8 @@ export const useStore = (): UseStoreReturn => {
    */
   const clearCurrentStore = () => {
     dispatch(clearStore());
+    // Also clear the query cache for store
+    queryClient.removeQueries({ queryKey: ["store"] });
   };
 
   /**
@@ -114,8 +155,20 @@ export const useStore = (): UseStoreReturn => {
     productId: string,
   ): Promise<StoreProduct | null> => {
     try {
-      const response = await axiosInstance.get(`/store/product/${productId}`);
-      return response.data;
+      // Check cache first
+      const cachedData = queryClient.getQueryData<StoreProduct>([
+        "product",
+        productId,
+      ]);
+      if (cachedData) return cachedData;
+
+      const data = await queryClient.fetchQuery({
+        queryKey: ["product", productId],
+        queryFn: () => storeService.getProductById(productId),
+        staleTime: 5 * 60 * 1000,
+      });
+
+      return data;
     } catch (error: any) {
       showToast(
         error.response?.data?.message || "Failed to load product",
@@ -205,10 +258,10 @@ export const useStore = (): UseStoreReturn => {
   };
 
   return {
-    // State
+    // State - use React Query states for loading/error
     currentStore,
-    loading: loading || requestStatus.loading,
-    error: error || requestStatus.error,
+    loading: isLoading,
+    error: queryError ? (queryError as Error).message : null,
     selectedProduct,
 
     // Store actions

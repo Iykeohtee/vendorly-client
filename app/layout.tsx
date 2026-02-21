@@ -24,9 +24,17 @@ export default function RootLayout({
     "/forgot-password",
     "/reset-password",
     "/verifyEmail",
+    "/dashboard/products",
+    "/dashboard/products/addProduct",
   ];
 
-  const shouldHideNavbar = authPaths.includes(pathName);
+  // Check if current path is a store page (single segment, not auth, not root, not api routes)
+  const isStorePage = pathName.split("/").length === 2 && // Has exactly one path segment
+                     !authPaths.includes(pathName) && // Not an auth page
+                     pathName !== "/" && // Not root
+                     !pathName.startsWith("/dashboard/") // Not dashboard
+
+  const shouldHideNavbar = authPaths.includes(pathName) || isStorePage;
 
   return (
     <html lang="en">
