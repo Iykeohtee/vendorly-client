@@ -6,6 +6,7 @@ export interface Product {
   quantity: number;
   images: string[];
   vendorId: string;
+  category: string;
   vendor?: {
     id: string;
     storeName: string;
