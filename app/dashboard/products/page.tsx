@@ -15,8 +15,29 @@ export default function ProductsPage() {
   // Loading state
   if (vendorProducts.isLoading) {
     return (
-      <div className="flex items-center justify-center h-40">
-        <p className="text-gray-500">Loading products...</p>
+      <div className="space-y-6">
+        <div>
+          <div className="h-6 w-40 bg-gray-200 rounded animate-pulse mb-2" />
+          <div className="h-4 w-64 bg-gray-100 rounded animate-pulse" />
+        </div>
+
+        <Card>
+          <CardContent className="p-6">
+            <div className="space-y-4">
+              {[...Array(5)].map((_, index) => (
+                <div
+                  key={index}
+                  className="flex justify-between items-center animate-pulse"
+                >
+                  <div className="h-4 w-40 bg-gray-200 rounded" />
+                  <div className="h-4 w-20 bg-gray-200 rounded" />
+                  <div className="h-4 w-16 bg-gray-200 rounded" />
+                  <div className="h-4 w-10 bg-gray-200 rounded" />
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
       </div>
     );
   }
@@ -24,8 +45,27 @@ export default function ProductsPage() {
   // Error state
   if (vendorProducts.isError) {
     return (
-      <div className="flex items-center justify-center h-40">
-        <p className="text-red-500">Failed to load products.</p>
+      <div className="flex items-center justify-center min-h-[300px]">
+        <Card className="max-w-md w-full text-center p-6 shadow-sm border border-red-100">
+          <CardContent className="space-y-4">
+            <div className="text-red-500 text-4xl">⚠️</div>
+
+            <h2 className="text-lg font-semibold text-gray-800">
+              Something went wrong
+            </h2>
+
+            <p className="text-gray-500 text-sm">
+              We couldn’t load your products right now. Please try again.
+            </p>
+
+            <Button
+              onClick={() => vendorProducts.refetch()}
+              className="bg-green-500 hover:bg-green-600 text-white"
+            >
+              Retry
+            </Button>
+          </CardContent>
+        </Card>
       </div>
     );
   }
