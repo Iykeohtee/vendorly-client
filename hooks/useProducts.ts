@@ -15,17 +15,16 @@ export const useProduct = () => {
     (state: RootState) => state.products,
   );
 
-  const useProducts = (vendorId?: string) => {
-    return useQuery({
-      queryKey: ["products", vendorId],
-      queryFn: async () => {
-        const url = vendorId ? `/products?vendorId=${vendorId}` : "/products";
-        const response = await axiosInstance.get<Product[]>(url);
-        dispatch(setProducts(response.data));
-        return response.data;
-      },
-    });
-  };
+  const vendorProducts = useQuery({
+    queryKey: ["products"],
+    queryFn: async () => {
+      const response = await axiosInstance.get<Product[]>(
+        "/products/vendor/my-products",
+      );
+      dispatch(setProducts(response.data));
+      return response.data;
+    },
+  });
 
   const useSingleProduct = (productId: string) => {
     return useQuery({
@@ -100,7 +99,7 @@ export const useProduct = () => {
   return {
     products,
     selectedProduct,
-    useProducts,
+    vendorProducts,
     useSingleProduct,
     createProduct,
     updateProduct,
