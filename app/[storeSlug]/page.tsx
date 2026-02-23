@@ -53,6 +53,7 @@ export default function StorePage() {
     );
   }
 
+
   const categories = getCategories();
 
   return (

@@ -2,14 +2,19 @@
 
 import { useDispatch, useSelector } from "react-redux";
 import { RootState, AppDispatch } from "@/redux/store";
-import { setCredentials, logout, updateUser } from "@/redux/slices/authSlice";
-import { User, AuthResponse } from "@/types/user";
+import {
+  setCredentials,
+  logout,
+  updateUser,
+  setAuthLoading,
+} from "@/redux/slices/authSlice";
+import { User } from "@/types/user";
 import axiosInstance from "@/lib/axios";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 export const useAuth = () => {
   const dispatch = useDispatch<AppDispatch>();
-  const { user, token, isAuthenticated } = useSelector(
+  const { user, isAuthenticated, isLoading } = useSelector(
     (state: RootState) => state.auth,
   );
   const [verificationStatus, setVerificationStatus] = useState<{
@@ -22,15 +27,31 @@ export const useAuth = () => {
     success: false,
   });
 
+  // Check authentication status on mount
+  useEffect(() => {
+    checkAuthStatus();
+  }, []);
+
+  const checkAuthStatus = async () => {
+    try {
+      const response = await axiosInstance.get("/auth/me");
+      dispatch(setCredentials({ user: response.data.user }));
+    } catch (error) {
+      dispatch(logout());
+    } finally {
+      dispatch(setAuthLoading(false));
+    }
+  };
+
   const login = async (
     email: string,
     password: string,
-  ): Promise<AuthResponse> => {
-    const response = await axiosInstance.post<AuthResponse>("/auth/login", {
+  ): Promise<{ user: User }> => {
+    const response = await axiosInstance.post<{ user: User }>("/auth/login", {
       email,
       password,
     });
-    dispatch(setCredentials(response.data));
+    dispatch(setCredentials({ user: response.data.user }));
     return response.data;
   };
 
@@ -42,16 +63,16 @@ export const useAuth = () => {
     storeName?: string,
     phone?: string,
     location?: string,
-  ): Promise<AuthResponse> => {
+  ): Promise<{ user: User }> => {
     const payload: any = { fullName, email, password, role, phone, location };
     if (role === "VENDOR") {
       payload.storeName = storeName;
     }
-    const response = await axiosInstance.post<AuthResponse>( 
+    const response = await axiosInstance.post<{ user: User }>(
       "/auth/register",
       payload,
     );
-    dispatch(setCredentials(response.data));
+    dispatch(setCredentials({ user: response.data.user }));
     return response.data;
   };
 
@@ -93,19 +114,37 @@ export const useAuth = () => {
     }
   };
 
-  const handleLogout = () => {
-    dispatch(logout());
+  const handleLogout = async () => {
+    try {
+      await axiosInstance.post("/auth/logout");
+      dispatch(logout());
+    } catch (error) {
+      console.error("Logout error:", error);
+      dispatch(logout());
+    }
+  };
+
+  const refreshTokens = async () => {
+    try {
+      const response = await axiosInstance.post("/auth/refresh");
+      dispatch(setCredentials({ user: response.data.user }));
+      return true;
+    } catch (error) {
+      return false;
+    }
   };
 
   return {
     user,
-    token,
     isAuthenticated,
+    isLoading,
     verificationStatus,
     login,
     signup,
     logout: handleLogout,
     verifyEmail,
     resendVerificationEmail,
+    refreshTokens,
+    checkAuthStatus,
   };
 };
