@@ -5,15 +5,16 @@ import { RootState, AppDispatch } from "@/redux/store";
 import {
   setCredentials,
   logout,
-  updateUser,
   setAuthLoading,
 } from "@/redux/slices/authSlice";
 import { User } from "@/types/user";
 import axiosInstance from "@/lib/axios";
 import { useState, useEffect } from "react";
+import { usePathname } from "next/navigation";
 
 export const useAuth = () => {
   const dispatch = useDispatch<AppDispatch>();
+  const pathname = usePathname();
   const { user, isAuthenticated, isLoading } = useSelector(
     (state: RootState) => state.auth,
   );
@@ -27,10 +28,28 @@ export const useAuth = () => {
     success: false,
   });
 
-  // Check authentication status on mount
+  // Define auth pages where we don't want to check auth
+  const authPages = [
+    "/login",
+    "/signup",
+    "/forgot-password",
+    "/reset-password",
+    "/verify-email",
+    "/verifyEmail",
+  ];
+
+  const isAuthPage = authPages.includes(pathname);
+
+  // Check authentication status on mount, but skip on auth pages
   useEffect(() => {
+    // Skip auth check on auth pages
+    if (isAuthPage) {
+      dispatch(setAuthLoading(false)); // Set loading to false immediately
+      return;
+    }
+
     checkAuthStatus();
-  }, []);
+  }, [isAuthPage]);
 
   const checkAuthStatus = async () => {
     try {
@@ -51,7 +70,14 @@ export const useAuth = () => {
       email,
       password,
     });
+
+    console.log("✅ Login successful, response:", response);
+    console.log("📦 Response headers:", response.headers);
+
     dispatch(setCredentials({ user: response.data.user }));
+
+    // await new Promise(resolve => setTimeout(resolve, 10000));
+
     return response.data;
   };
 

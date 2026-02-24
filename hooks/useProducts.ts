@@ -26,6 +26,19 @@ export const useProduct = () => {
     },
   });
 
+  const vendorProduct = (productId: string) => {
+    return useQuery({
+      queryKey: ["product", productId],
+      queryFn: async () => {
+        const response = await axiosInstance.get<Product>(
+          `/products/${productId}`, 
+        );
+        return response.data;
+      },
+      enabled: !!productId, // Only run if productId exists 
+    });
+  };
+
   const useSingleProduct = (productId: string) => {
     return useQuery({
       queryKey: ["product", productId],
@@ -100,6 +113,7 @@ export const useProduct = () => {
     products,
     selectedProduct,
     vendorProducts,
+    vendorProduct,
     useSingleProduct,
     createProduct,
     updateProduct,

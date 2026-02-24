@@ -3,7 +3,6 @@
 import { useEffect } from "react";
 import { useParams } from "next/navigation";
 import { useStore } from "@/hooks/useStore";
-import { useToast } from "@/components/ui/Toast";
 import StoreHeader from "@/components/storefront/StoreHeader"; 
 import ProductGrid from "@/components/storefront/ProductGrid";
 import ProductModal from "@/components/storefront/ProductModal";
