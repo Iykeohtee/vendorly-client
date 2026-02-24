@@ -199,7 +199,7 @@ const ProductCard = ({
               <div className="flex gap-2">
                 <button
                   onClick={() =>
-                    window.open(`/${product.id}`, "_blank") 
+                    window.open(`/product/${product.id}`, "_blank") 
                   }
                   className="p-2 bg-white rounded-full shadow-lg hover:bg-green-500 hover:text-white transition-colors"
                   title="View Product"
