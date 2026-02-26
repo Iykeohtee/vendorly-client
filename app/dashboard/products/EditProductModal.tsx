@@ -138,7 +138,7 @@ export default function EditProductModal({
 
       // Append images to remove
       if (imagesToRemove.length > 0) {  
-        formData.append("imagesToRemove", JSON.stringify(imagesToRemove));
+        formData.append("imagesToRemove", JSON.stringify(imagesToRemove));  
       }
 
       await updateProduct.mutateAsync({ id: product.id, formData });
