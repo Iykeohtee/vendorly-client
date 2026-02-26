@@ -11,6 +11,7 @@ export interface Product {
     id: string;
     storeName: string;
     fullName: string;
+    storeSlug: string;
   };
   createdAt: string;
   updatedAt: string;

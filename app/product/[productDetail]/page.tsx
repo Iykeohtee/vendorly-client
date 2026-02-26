@@ -17,6 +17,7 @@ import {
 import Image from "next/image";
 import Button from "@/components/ui/Button";
 import { Card, CardContent } from "@/components/ui/Card";
+import Link from "next/link";
 
 const ProductDetail = () => {
   const params = useParams();
@@ -103,15 +104,14 @@ const ProductDetail = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Navigation */}
         <div className="flex items-center justify-between mb-6">
-          <button
-            onClick={() => router.back()}
-            className="flex items-center text-gray-600 hover:text-green-600 transition-colors group"
+          <Link href={`/${product.vendor?.storeSlug}`}
+           className="flex items-center text-gray-600 hover:text-green-600 transition-colors group"
           >
             <div className="p-2 rounded-full bg-white shadow-sm group-hover:bg-green-50 transition-colors mr-2">
               <ChevronLeft className="h-4 w-4" />
             </div>
-            <span className="text-sm font-medium">Back to Products</span>
-          </button>
+            <span className="text-sm font-medium">Go to vendor store</span>
+          </Link>
 
           <button
             onClick={() => setIsWishlisted(!isWishlisted)}

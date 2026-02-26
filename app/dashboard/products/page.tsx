@@ -16,6 +16,7 @@ import { Card, CardContent } from "@/components/ui/Card";
 import { useProduct } from "@/hooks/useProducts";
 import Link from "next/link";
 import Image from "next/image";
+import EditProductModal from "@/app/dashboard/products/EditProductModal";
 
 // Pagination Component
 const Pagination = ({
@@ -291,6 +292,8 @@ const ProductCard = ({
 };
 
 export default function ProductsPage() {
+  const [ isEditModalOpen, setIsEditModalOpen ] = useState(false);
+  const [ selectedProduct, setSelectedProduct ] = useState<any>(null)
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedCategory, setSelectedCategory] = useState<string>("");
@@ -368,8 +371,19 @@ export default function ProductsPage() {
   }, [searchTerm, selectedCategory, sortBy]);
 
   const handleEdit = (productId: string) => {
-    window.location.href = `/dashboard/products/edit/${productId}`;
+    const product = vendorProducts.data?.find((p) => p.id === productId);
+    if(product) {
+      setSelectedProduct(product);
+      setIsEditModalOpen(true);
+    }
   };
+
+  // callback for when product is updated in the edit modal 
+  const handleProductUpdated = () => {
+    vendorProducts.refetch();
+    setIsEditModalOpen(false);
+    setSelectedProduct(null);
+  }
 
   const handleDelete = async (productId: string) => {
     if (window.confirm("Are you sure you want to delete this product?")) {
@@ -583,6 +597,17 @@ export default function ProductsPage() {
           </div>
         </>
       )}
+
+      {/* Edit Product Modal */}
+      <EditProductModal
+        isOpen={isEditModalOpen}
+        onClose={() => {
+          setIsEditModalOpen(false);
+          setSelectedProduct(null);
+        }}
+        product={selectedProduct}
+        onProductUpdated={handleProductUpdated}
+      />
     </div>
   );
 }
