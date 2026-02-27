@@ -93,6 +93,7 @@ export default function RootLayout({
     "/verifyEmail",
     "/dashboard/products",
     "/dashboard/products/addProduct",
+    "/dashboard/orders",
   ];
 
   const isStorePage =
