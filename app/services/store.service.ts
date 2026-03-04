@@ -7,7 +7,7 @@ export const storeService = {
     return response.data;
   },
 
-  getProductById: async (productId: string): Promise<StoreProduct> => {
+  getProductById: async (productId: string): Promise<StoreProduct> => { 
     const response = await axiosInstance.get(`/store/product/${productId}`);
     return response.data;
   },
