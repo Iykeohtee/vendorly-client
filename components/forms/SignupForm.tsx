@@ -69,6 +69,7 @@ export default function SignupForm() {
   const role = watch("role");
 
   const onSubmit = async (data: SignupFormData) => {
+    console.log("Form Data:", data);
     try {
       setIsLoading(true);
       await signup(

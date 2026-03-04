@@ -15,9 +15,28 @@ export default function ProductCard({ product, onClick }: ProductCardProps) {
 
   const handleWhatsAppOrder = (e: React.MouseEvent) => {
     e.stopPropagation();
-    const message = `Hello, I'm interested in ordering: ${product.name} (₦${product.price.toLocaleString()})`;
-    const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(message)}`;
-    window.open(whatsappUrl, "_blank");
+
+    if (!product.vendorPhone) return;
+
+    const formatToInternational = (phone: string) => {
+      let cleaned = phone.replace(/[^\d]/g, "");
+
+      // If number starts with 0, replace with 234
+      if (cleaned.startsWith("0")) {
+        cleaned = "234" + cleaned.slice(1);
+      }
+
+      return cleaned;
+    };
+
+    const phoneNumber = formatToInternational(product.vendorPhone);
+
+    const message = `Hello, I'm interested in ordering: Product: ${product.name} Price: ₦${product.price.toLocaleString()}. Please let me know how to proceed with the order.`;
+
+    const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
+    // const whatsappUrl = `https://api.whatsapp.com/send?phone=${phoneNumber}&text=${encodeURIComponent(message)}`;
+
+    window.open(whatsappUrl, "_blank", "noopener,noreferrer");
   };
 
   return (

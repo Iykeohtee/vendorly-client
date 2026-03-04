@@ -9,6 +9,7 @@ export interface StoreProduct {
   category: string;
   tags: string[];
   quantity: number;
+  vendorPhone: string;
 }
 
 export interface StoreData {

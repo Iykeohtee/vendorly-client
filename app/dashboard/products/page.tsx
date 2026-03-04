@@ -9,6 +9,7 @@ import {
   ImageOff,
   Package,
   Eye,
+  Info,
 } from "lucide-react";
 import Button from "@/components/ui/Button";
 import Input from "@/components/ui/Input";
@@ -200,7 +201,7 @@ const ProductCard = ({
               <div className="flex gap-2">
                 <button
                   onClick={() =>
-                    window.open(`/product/${product.id}`, "_blank") 
+                    window.open(`/product/${product.id}`, "_blank")
                   }
                   className="p-2 bg-white rounded-full shadow-lg hover:bg-green-500 hover:text-white transition-colors"
                   title="View Product"
@@ -292,8 +293,8 @@ const ProductCard = ({
 };
 
 export default function ProductsPage() {
-  const [ isEditModalOpen, setIsEditModalOpen ] = useState(false);
-  const [ selectedProduct, setSelectedProduct ] = useState<any>(null)
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState<any>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedCategory, setSelectedCategory] = useState<string>("");
@@ -301,6 +302,7 @@ export default function ProductsPage() {
     "newest" | "price-low" | "price-high" | "name"
   >("newest");
   const productsPerPage = 8;
+  const [showDuplicateNotice, setShowDuplicateNotice] = useState(true);
 
   const { vendorProducts, deleteProduct } = useProduct();
 
@@ -372,18 +374,18 @@ export default function ProductsPage() {
 
   const handleEdit = (productId: string) => {
     const product = vendorProducts.data?.find((p) => p.id === productId);
-    if(product) {
+    if (product) {
       setSelectedProduct(product);
       setIsEditModalOpen(true);
     }
   };
 
-  // callback for when product is updated in the edit modal 
+  // callback for when product is updated in the edit modal
   const handleProductUpdated = () => {
     vendorProducts.refetch();
     setIsEditModalOpen(false);
     setSelectedProduct(null);
-  }
+  };
 
   const handleDelete = async (productId: string) => {
     if (window.confirm("Are you sure you want to delete this product?")) {
@@ -468,6 +470,28 @@ export default function ProductsPage() {
           </Button>
         </Link>
       </div>
+
+      {showDuplicateNotice && (
+        <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+          <div className="flex items-start gap-3">
+            <div className="flex-shrink-0">
+              <Info className="h-5 w-5 text-red-400" />
+            </div>
+            <div className="flex-1 text-sm text-red-700">
+              <span className="font-medium">Quick tip:</span> If you're adding a
+              product that already exists, consider updating the quantity of the
+              existing product instead of creating a duplicate.
+            </div>
+            <button
+              onClick={() => setShowDuplicateNotice(false)}
+              className="flex-shrink-0 text-red-400 hover:text-red-500"
+              aria-label="Dismiss"
+            >
+              <span className="text-xl leading-none">&times;</span>
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Filters Bar */}
       <Card>

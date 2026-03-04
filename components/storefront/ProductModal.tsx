@@ -1,10 +1,16 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import Image from 'next/image';
-import { StoreProduct } from '@/redux/slices/storeSlice';
-import { X, MessageCircle, ChevronLeft, ChevronRight, Heart } from 'lucide-react';
-import Button from '@/components/ui/Button';
+import { useState } from "react";
+import Image from "next/image";
+import { StoreProduct } from "@/redux/slices/storeSlice";
+import {
+  X,
+  MessageCircle,
+  ChevronLeft,
+  ChevronRight,
+  Heart,
+} from "lucide-react";
+import Button from "@/components/ui/Button";
 
 interface ProductModalProps {
   product: StoreProduct;
@@ -13,21 +19,48 @@ interface ProductModalProps {
   onWhatsAppOrder?: (product: StoreProduct) => void;
 }
 
-export default function ProductModal({ product, storeSlug, onClose }: ProductModalProps) {
+export default function ProductModal({
+  product,
+  storeSlug,
+  onClose,
+}: ProductModalProps) {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
-  const handleWhatsAppOrder = () => {
-    const message = `Hello, I'm interested in ordering:%0A%0A*Product:* ${product.name}%0A*Price:* ₦${product.price.toLocaleString()}%0A*Store:* ${window.location.origin}/${storeSlug}`;
-    const whatsappUrl = `https://wa.me/?text=${message}`;
-    window.open(whatsappUrl, '_blank');
+  const handleWhatsAppOrder = (e: React.MouseEvent) => {
+    e.stopPropagation();
+
+    if (!product.vendorPhone) return;
+
+    const formatToInternational = (phone: string) => {
+      let cleaned = phone.replace(/[^\d]/g, "");
+
+      // If number starts with 0, replace with 234
+      if (cleaned.startsWith("0")) {
+        cleaned = "234" + cleaned.slice(1);
+      }
+
+      return cleaned;
+    };
+
+    const phoneNumber = formatToInternational(product.vendorPhone);
+
+    const message = `Hello, I'm interested in ordering: Product: ${product.name} Price: ₦${product.price.toLocaleString()}. Please let me know how to proceed with the order.`;
+
+    const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
+    // const whatsappUrl = `https://api.whatsapp.com/send?phone=${phoneNumber}&text=${encodeURIComponent(message)}`;
+
+    window.open(whatsappUrl, "_blank", "noopener,noreferrer");
   };
 
+  
   const nextImage = () => {
     setCurrentImageIndex((prev) => (prev + 1) % product.images.length);
   };
 
   const prevImage = () => {
-    setCurrentImageIndex((prev) => (prev - 1 + product.images.length) % product.images.length);
+    setCurrentImageIndex(
+      (prev) => (prev - 1 + product.images.length) % product.images.length,
+    );
   };
 
   return (
@@ -52,7 +85,7 @@ export default function ProductModal({ product, storeSlug, onClose }: ProductMod
                   fill
                   className="object-cover"
                 />
-                
+
                 {product.images.length > 1 && (
                   <>
                     <button
@@ -78,7 +111,9 @@ export default function ProductModal({ product, storeSlug, onClose }: ProductMod
                         key={index}
                         onClick={() => setCurrentImageIndex(index)}
                         className={`w-2 h-2 rounded-full transition-colors ${
-                          index === currentImageIndex ? 'bg-green-500' : 'bg-gray-300'
+                          index === currentImageIndex
+                            ? "bg-green-500"
+                            : "bg-gray-300"
                         }`}
                       />
                     ))}
@@ -94,8 +129,10 @@ export default function ProductModal({ product, storeSlug, onClose }: ProductMod
 
           {/* Product details */}
           <div className="p-6">
-            <h2 className="text-2xl font-bold text-gray-800 mb-2">{product.name}</h2>
-            
+            <h2 className="text-2xl font-bold text-gray-800 mb-2">
+              {product.name}
+            </h2>
+
             <div className="flex items-center gap-2 mb-4">
               <span className="text-3xl font-bold text-green-600">
                 ₦{product.price.toLocaleString()}
@@ -113,14 +150,16 @@ export default function ProductModal({ product, storeSlug, onClose }: ProductMod
 
             <div className="mb-6">
               <h3 className="font-semibold text-gray-700 mb-2">Description</h3>
-              <p className="text-gray-600 whitespace-pre-line">{product.description}</p>
+              <p className="text-gray-600 whitespace-pre-line">
+                {product.description}
+              </p>
             </div>
 
             {product.tags.length > 0 && (
               <div className="mb-6">
                 <h3 className="font-semibold text-gray-700 mb-2">Tags</h3>
                 <div className="flex flex-wrap gap-2">
-                  {product.tags.map(tag => (
+                  {product.tags.map((tag) => (
                     <span
                       key={tag}
                       className="px-3 py-1 bg-gray-100 text-gray-600 text-sm rounded-full"
