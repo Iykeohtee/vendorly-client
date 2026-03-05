@@ -9,43 +9,49 @@ import { setError } from "@/redux/slices/storeSlice";
 interface CreateOrderData {
   productId: string;
   vendorId: string;
-  customerName?: string;
-  customerPhone?: string;
+  customerName: string;
+  customerPhone: string;
+  customerId: string;
 }
-
 
 export const useOrder = () => {
-    const dispatch = useDispatch<AppDispatch>();
-    const queryClient = useQueryClient();
+  const dispatch = useDispatch<AppDispatch>();
+  const queryClient = useQueryClient();
 
-    const { orders, selectedOrder, isLoading, error } = useSelector(
-        (state: RootState) => state.order,
-    );
+//   const { user } = useSelector((state: RootState) => state.auth); 
 
-    const createOrder = useMutation({
-        mutationFn: async (orderData: CreateOrderData) => {
-          const response = await orderService.trackWhatsAppClick(orderData)
-          return response;
-        },
-        onSuccess: (data) => {
-            dispatch(addOrder(data))
-            // Refresh queries
-            queryClient.invalidateQueries({ queryKey: ['vendor-orders'] });
-            queryClient.invalidateQueries({ queryKey: ['vendor-stats'] });
-        },
-        onError: (error) => {
-            dispatch(setError(error instanceof Error ? error.message : "Failed to create order"));
-        }
-    })
+  const { orders, selectedOrder, isLoading, error } = useSelector(
+    (state: RootState) => state.order,
+  );
 
-    return {
-        // data from redux
-        orders,
-        selectedOrder,
-        isLoading,
-        error,
+  const createOrder = useMutation({
+    mutationFn: async (orderData: CreateOrderData) => {
+      const response = await orderService.trackWhatsAppClick(orderData);
+      return response;
+    },
+    onSuccess: (data) => {
+      dispatch(addOrder(data));
+      // Refresh queries
+      queryClient.invalidateQueries({ queryKey: ["vendor-orders"] });
+      queryClient.invalidateQueries({ queryKey: ["vendor-stats"] });
+    },
+    onError: (error) => {
+      dispatch(
+        setError(
+          error instanceof Error ? error.message : "Failed to create order",
+        ),
+      );
+    },
+  });
 
-        // actions
-        createOrder: createOrder.mutateAsync,
-    }
-}
+  return {
+    // data from redux
+    orders,
+    selectedOrder,
+    isLoading,
+    error,
+
+    // actions
+    createOrder: createOrder.mutateAsync,
+  };
+};

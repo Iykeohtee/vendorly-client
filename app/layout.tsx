@@ -9,6 +9,7 @@ import { TooltipProvider } from "@radix-ui/react-tooltip";
 import Navbar from "@/components/layout/Navbar";
 import { usePathname } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
+import { Toaster } from "@/components/ui/sonner"
 import "./globals.css";
 
 
@@ -109,6 +110,7 @@ export default function RootLayout({
       <body>
         <Provider store={store}>
           <QueryClientProvider client={queryClient}>
+            <Toaster />  
             <ToastProvider>
               <TooltipProvider>
                 <AuthInitializer>

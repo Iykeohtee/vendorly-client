@@ -34,11 +34,7 @@ interface DashboardStats {
     status: string;
     createdAt: string;
     items: any[];
-    customer: {
-      user: {
-        fullName: string;
-      };
-    };
+    customerName: string;
   }>;
 }
 
@@ -236,11 +232,11 @@ export default function DashboardPage() {
                   </div>
                   <div>
                     <p className="font-medium text-gray-800">
-                      #{order.orderNumber}
+                      #{order.id}
                     </p>
                     <p className="text-sm text-gray-500">
-                      {order.customer?.user?.fullName || "Customer"} • ₦
-                      {order.total.toLocaleString()}
+                      {order.customerName || "Customer"} • ₦
+                      {order?.total?.toLocaleString()}
                     </p>
                   </div>
                 </div>
@@ -265,3 +261,7 @@ export default function DashboardPage() {
     </div>
   );
 }
+
+
+
+// do well to update that order number to product name and also add the price of the product and check to add quantity too. 

@@ -2,6 +2,7 @@ import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
 export interface StoreProduct {
   id: string;
+  vendorId: string;
   name: string;
   description: string;
   price: number;

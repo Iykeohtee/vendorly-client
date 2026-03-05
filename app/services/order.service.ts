@@ -19,8 +19,9 @@ export const orderService = {
   trackWhatsAppClick: async (data: {
     productId: string;
     vendorId: string;
-    customerName?: string;
-    customerPhone?: string;
+    customerName: string;
+    customerPhone: string;
+    customerId: string;
   }): Promise<Order> => {
     try {
       const response = await axiosInstance.post<Order>( 
@@ -28,7 +29,6 @@ export const orderService = {
         data,
       );
       store.dispatch(addOrder(response.data));
-      await orderService.getVendorStats();
       return response.data;
     } catch (error) {
       console.error("Error tracking WhatsApp click:", error);

@@ -6,7 +6,7 @@ export interface User {
   fullName: string;
   role: UserRole;
   storeName?: string;
-  phoneNumber?: string;
+  phone?: string;
   vendor?: {
     storeSlug: string;
     storeName: string;

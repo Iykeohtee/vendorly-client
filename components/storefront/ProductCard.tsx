@@ -4,6 +4,10 @@ import Image from "next/image";
 import { StoreProduct } from "@/redux/slices/storeSlice";
 import { Heart, ShoppingBag } from "lucide-react";
 import { useState } from "react";
+import { useOrder } from "@/hooks/useOrder";
+import { RootState } from "@/redux/store";
+import { useSelector } from "react-redux";
+import { toast } from "sonner";
 
 interface ProductCardProps {
   product: StoreProduct;
@@ -13,7 +17,11 @@ interface ProductCardProps {
 export default function ProductCard({ product, onClick }: ProductCardProps) {
   const [isHovered, setIsHovered] = useState(false);
 
-  const handleWhatsAppOrder = (e: React.MouseEvent) => {
+  const { user } = useSelector((state: RootState) => state.auth);
+
+  const { createOrder, error, orders, isLoading } = useOrder();
+
+  const handleWhatsAppOrder = async (e: React.MouseEvent) => {
     e.stopPropagation();
 
     if (!product.vendorPhone) return;
@@ -29,14 +37,31 @@ export default function ProductCard({ product, onClick }: ProductCardProps) {
       return cleaned;
     };
 
-    const phoneNumber = formatToInternational(product.vendorPhone);
+    console.log('Phone number:', user?.phone)
+    console.log(user) 
 
-    const message = `Hello, I'm interested in ordering: Product: ${product.name} Price: ₦${product.price.toLocaleString()}. Please let me know how to proceed with the order.`;
+    try {
+      await createOrder({
+        productId: product.id,
+        vendorId: product.vendorId,
+        customerId: user?.id!,
+        customerName: user?.fullName!,
+        customerPhone: user?.phone!,
+      });
 
-    const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
-    // const whatsappUrl = `https://api.whatsapp.com/send?phone=${phoneNumber}&text=${encodeURIComponent(message)}`;
+      const phoneNumber = formatToInternational(product.vendorPhone);
 
-    window.open(whatsappUrl, "_blank", "noopener,noreferrer");
+      const message = `Hello, I'm interested in ordering: Product: ${product.name} Price: ₦${product.price.toLocaleString()}. Please let me know how to proceed with the order.`;
+
+      const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
+
+      window.open(whatsappUrl, "_blank", "noopener,noreferrer");
+    } catch (error: any) {
+      toast.error(error.response?.data?.message, {
+        position: "top-center",
+      });
+      console.error("Failed to create order:", error);
+    }
   };
 
   return (
@@ -99,7 +124,7 @@ export default function ProductCard({ product, onClick }: ProductCardProps) {
             disabled={product.quantity === 0}
             className="px-3 py-1.5 bg-green-500 text-white text-sm rounded-lg hover:bg-green-600 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
           >
-            Order
+            {isLoading ? "Processing..." : "Order"}
           </button>
         </div>
       </div>
