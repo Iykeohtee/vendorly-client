@@ -19,7 +19,7 @@ export default function ProductCard({ product, onClick }: ProductCardProps) {
 
   const { user } = useSelector((state: RootState) => state.auth);
 
-  const { createOrder, error, orders, isLoading } = useOrder();
+  const { createOrder, isCreating } = useOrder();
 
   const handleWhatsAppOrder = async (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -37,9 +37,6 @@ export default function ProductCard({ product, onClick }: ProductCardProps) {
       return cleaned;
     };
 
-    console.log('Phone number:', user?.phone)
-    console.log(user) 
-
     try {
       await createOrder({
         productId: product.id,
@@ -47,6 +44,7 @@ export default function ProductCard({ product, onClick }: ProductCardProps) {
         customerId: user?.id!,
         customerName: user?.fullName!,
         customerPhone: user?.phone!,
+        productName: product.name,
       });
 
       const phoneNumber = formatToInternational(product.vendorPhone);
@@ -121,10 +119,10 @@ export default function ProductCard({ product, onClick }: ProductCardProps) {
 
           <button
             onClick={handleWhatsAppOrder}
-            disabled={product.quantity === 0}
+            disabled={product.quantity === 0 || isCreating}
             className="px-3 py-1.5 bg-green-500 text-white text-sm rounded-lg hover:bg-green-600 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
           >
-            {isLoading ? "Processing..." : "Order"}
+            {isCreating ? "Processing..." : "Order"}
           </button>
         </div>
       </div>

@@ -2,7 +2,21 @@
 
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
-import { Package, ShoppingCart, Users, DollarSign } from "lucide-react";
+import {
+  Package,
+  ShoppingCart,
+  Users,
+  DollarSign,
+  Clock,
+  ArrowUpRight,
+  ArrowDownRight,
+  Receipt,
+  ShoppingBag,
+  Truck,
+  Box,
+  ClipboardList,
+  Archive,
+} from "lucide-react";
 import { useSelector } from "react-redux";
 import { RootState } from "@/redux/store";
 import { useQuery } from "@tanstack/react-query";
@@ -35,15 +49,186 @@ interface DashboardStats {
     createdAt: string;
     items: any[];
     customerName: string;
+    productName: string;
   }>;
 }
 
 // Single API call to get all dashboard data
 const fetchDashboardStats = async (): Promise<DashboardStats> => {
   const response = await axiosInstance.get("/dashboard/stats");
-  console.log(response.data)
+  console.log(response.data);
   return response.data;
 };
+
+// Status badge component
+const StatusBadge = ({ status }: { status: string }) => {
+  const statusConfig = {
+    COMPLETED: {
+      bg: "bg-emerald-50",
+      text: "text-emerald-700",
+      dot: "bg-emerald-500",
+      label: "Completed",
+    },
+    PENDING: {
+      bg: "bg-amber-50",
+      text: "text-amber-700",
+      dot: "bg-amber-500",
+      label: "Pending",
+    },
+    PROCESSING: {
+      bg: "bg-blue-50",
+      text: "text-blue-700",
+      dot: "bg-blue-500",
+      label: "Processing",
+    },
+    CANCELLED: {
+      bg: "bg-rose-50",
+      text: "text-rose-700",
+      dot: "bg-rose-500",
+      label: "Cancelled",
+    },
+  };
+
+  const config = statusConfig[status as keyof typeof statusConfig] || {
+    bg: "bg-gray-50",
+    text: "text-gray-700",
+    dot: "bg-gray-500",
+    label: status,
+  };
+
+  return (
+    <span
+      className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium ${config.bg} ${config.text}`}
+    >
+      <span className={`w-1.5 h-1.5 rounded-full ${config.dot}`}></span>
+      {config.label}
+    </span>
+  );
+};
+
+// Stat Card Component
+const StatCard = ({
+  title,
+  value,
+  icon: Icon,
+  trend,
+  trendLabel,
+  trendDirection = "up",
+  iconBgColor = "bg-emerald-50",
+  iconColor = "text-emerald-600",
+}: {
+  title: string;
+  value: string | number;
+  icon: any;
+  trend?: number;
+  trendLabel?: string;
+  trendDirection?: "up" | "down" | "neutral";
+  iconBgColor?: string;
+  iconColor?: string;
+}) => {
+  const isPositive = trendDirection === "up";
+
+  return (
+    <Card className="overflow-hidden border-0 shadow-sm hover:shadow-md transition-all duration-200">
+      <CardContent className="p-6">
+        <div className="flex items-start justify-between">
+          <div className="space-y-2">
+            <p className="text-sm font-medium text-gray-500">{title}</p>
+            <div className="flex items-baseline gap-2">
+              <span className="text-3xl font-bold text-gray-900">{value}</span>
+              {trend !== undefined && (
+                <span
+                  className={`flex items-center text-xs font-medium ${
+                    isPositive ? "text-emerald-600" : "text-rose-600"
+                  }`}
+                >
+                  {isPositive ? (
+                    <ArrowUpRight className="w-3 h-3" />
+                  ) : (
+                    <ArrowDownRight className="w-3 h-3" />
+                  )}
+                  {Math.abs(trend)}%
+                </span>
+              )}
+            </div>
+            {trendLabel && (
+              <p className="text-xs text-gray-400">{trendLabel}</p>
+            )}
+          </div>
+          <div className={`p-3 rounded-xl ${iconBgColor}`}>
+            <Icon className={`w-5 h-5 ${iconColor}`} />
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+};
+
+// Professional order icon - consistent for all orders
+const OrderIcon = () => {
+  return (
+    <div className="w-12 h-12 bg-emerald-50 rounded-xl flex items-center justify-center flex-shrink-0 border border-emerald-100">
+      <Receipt className="h-5 w-5 text-emerald-600" />
+    </div>
+  );
+};
+
+// Skeleton Loader Component
+const DashboardSkeleton = () => (
+  <div className="space-y-6 animate-pulse">
+    {/* Header Skeleton */}
+    <div className="space-y-2">
+      <div className="h-8 w-48 bg-gray-200 rounded-lg"></div>
+      <div className="h-5 w-64 bg-gray-200 rounded-lg"></div>
+    </div>
+
+    {/* Stats Grid Skeleton */}
+    <div className="grid gap-5 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
+      {[1, 2, 3, 4].map((i) => (
+        <Card key={i} className="border-0 shadow-sm">
+          <CardContent className="p-6">
+            <div className="space-y-4">
+              <div className="flex justify-between">
+                <div className="space-y-2 flex-1">
+                  <div className="h-4 w-20 bg-gray-200 rounded"></div>
+                  <div className="h-8 w-28 bg-gray-200 rounded"></div>
+                  <div className="h-3 w-16 bg-gray-200 rounded"></div>
+                </div>
+                <div className="w-12 h-12 bg-gray-200 rounded-xl"></div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      ))}
+    </div>
+
+    {/* Recent Orders Skeleton */}
+    <Card className="border-0 shadow-sm">
+      <CardHeader className="border-b border-gray-100">
+        <div className="h-6 w-32 bg-gray-200 rounded"></div>
+      </CardHeader>
+      <CardContent className="p-4 sm:p-6">
+        <div className="space-y-4">
+          {[1, 2, 3, 4, 5].map((i) => (
+            <div
+              key={i}
+              className="flex flex-col sm:flex-row sm:items-center justify-between gap-4"
+            >
+              <div className="flex items-center gap-4 flex-1">
+                <div className="w-12 h-12 bg-gray-200 rounded-xl"></div>
+                <div className="space-y-2 flex-1">
+                  <div className="h-4 w-48 bg-gray-200 rounded"></div>
+                  <div className="h-3 w-32 bg-gray-200 rounded"></div>
+                </div>
+              </div>
+              <div className="w-24 h-8 bg-gray-200 rounded-full"></div>
+            </div>
+          ))}
+        </div>
+      </CardContent>
+    </Card>
+  </div>
+);
 
 export default function DashboardPage() {
   const [mounted, setMounted] = useState(false);
@@ -53,8 +238,8 @@ export default function DashboardPage() {
   const { data: stats, isLoading } = useQuery({
     queryKey: ["dashboard-stats"],
     queryFn: fetchDashboardStats,
-    staleTime: 5 * 60 * 1000, 
-    refetchInterval: 30000, 
+    staleTime: 5 * 60 * 1000,
+    refetchInterval: 30000,
   });
 
   useEffect(() => {
@@ -63,205 +248,159 @@ export default function DashboardPage() {
 
   // Show loading skeleton during SSR and initial fetch
   if (!mounted || isLoading) {
-    return (
-      <div className="space-y-6 animate-pulse">
-        <div>
-          <div className="h-8 w-64 bg-gray-200 rounded"></div>
-          <div className="h-4 w-96 bg-gray-200 rounded mt-2"></div>
-        </div>
-
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-          {[1, 2, 3, 4].map((i) => (
-            <Card key={i}>
-              <CardContent className="p-6">
-                <div className="space-y-3">
-                  <div className="h-4 w-20 bg-gray-200 rounded"></div>
-                  <div className="h-8 w-24 bg-gray-200 rounded"></div>
-                  <div className="h-3 w-16 bg-gray-200 rounded"></div>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-
-        <Card>
-          <CardHeader>
-            <div className="h-6 w-32 bg-gray-200 rounded"></div>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {[1, 2, 3, 4, 5].map((i) => (
-                <div key={i} className="h-16 bg-gray-200 rounded"></div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-    );
+    return <DashboardSkeleton />;
   }
+
+  const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat("en-NG", {
+      style: "currency",
+      currency: "NGN",
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    }).format(amount);
+  };
 
   return (
     <div className="space-y-6">
-      {/* Welcome section */}
-      <div>
-        <h1 className="text-2xl font-bold text-gray-800">Dashboard Overview</h1>
-        <p className="text-gray-600 mt-1">
-          Welcome back!{" "}
-          <span className="text-green-500 font-bold">
-            {user?.vendor?.storeName || "Guest"}
-          </span>
-        </p>
+      {/* Welcome section with gradient */}
+      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-emerald-500 to-emerald-600 p-6 text-white">
+        <div className="relative z-10">
+          <h1 className="text-2xl font-bold">Dashboard Overview</h1>
+          <p className="text-emerald-50 mt-1 flex items-center gap-1">
+            Welcome back,{" "}
+            <span className="font-semibold">
+              {user?.vendor?.storeName || "Guest"}
+            </span>
+            <span className="text-2xl ml-1">👋</span>
+          </p>
+        </div>
+        {/* Decorative elements */}
+        <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -translate-y-32 translate-x-32"></div>
+        <div className="absolute bottom-0 left-0 w-48 h-48 bg-emerald-400/20 rounded-full -translate-x-24 translate-y-24"></div>
       </div>
 
-      {/* Stats cards - All data comes from single API call */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      {/* Stats cards - Made responsive */}
+      <div className="grid gap-5 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
         {/* Revenue Card */}
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-gray-600">
-              Total Revenue
-            </CardTitle>
-            <DollarSign className="h-4 w-4 text-green-500" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              ₦{stats?.revenue?.total?.toLocaleString() || "0"}
-            </div>
-            <p
-              className={`text-xs mt-1 ${
-                (stats?.revenue?.percentageChange || 0) >= 0
-                  ? "text-green-600"
-                  : "text-red-600"
-              }`}
-            >
-              {(stats?.revenue?.percentageChange || 0) >= 0 ? "+" : ""}
-              {stats?.revenue?.percentageChange || 0}% from last month
-            </p>
-          </CardContent>
-        </Card>
+        <StatCard
+          title="Total Revenue"
+          value={formatCurrency(stats?.revenue?.total || 0)}
+          icon={DollarSign}
+          trend={stats?.revenue?.percentageChange}
+          trendLabel="vs last month"
+          trendDirection={
+            (stats?.revenue?.percentageChange || 0) >= 0 ? "up" : "down"
+          }
+          iconBgColor="bg-emerald-50"
+          iconColor="text-emerald-600"
+        />
 
         {/* Orders Card */}
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-gray-600">
-              Orders
-            </CardTitle>
-            <ShoppingCart className="h-4 w-4 text-green-500" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {stats?.orders?.total?.toLocaleString() || "0"}
-            </div>
-            <p
-              className={`text-xs mt-1 ${
-                (stats?.orders?.percentageChange || 0) >= 0
-                  ? "text-green-600"
-                  : "text-red-600"
-              }`}
-            >
-              {(stats?.orders?.percentageChange || 0) >= 0 ? "+" : ""}
-              {stats?.orders?.percentageChange || 0}% from last month
-            </p>
-          </CardContent>
-        </Card>
+        <StatCard
+          title="Orders"
+          value={stats?.orders?.total?.toLocaleString() || "0"}
+          icon={ShoppingCart}
+          trend={stats?.orders?.percentageChange}
+          trendLabel="vs last month"
+          trendDirection={
+            (stats?.orders?.percentageChange || 0) >= 0 ? "up" : "down"
+          }
+          iconBgColor="bg-blue-50"
+          iconColor="text-blue-600"
+        />
 
         {/* Products Card */}
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-gray-600">
-              Products
-            </CardTitle>
-            <Package className="h-4 w-4 text-green-500" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {stats?.products?.total || 0}
-            </div>
-            <p className="text-xs text-green-600 mt-1">
-              +{stats?.products?.newThisMonth || 0} new this month
-            </p>
-          </CardContent>
-        </Card>
+        <StatCard
+          title="Products"
+          value={stats?.products?.total || 0}
+          icon={Package}
+          trend={stats?.products?.newThisMonth}
+          trendLabel="new this month"
+          trendDirection="up"
+          iconBgColor="bg-amber-50"
+          iconColor="text-amber-600"
+        />
 
         {/* Customers Card */}
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-gray-600">
-              Customers
-            </CardTitle>
-            <Users className="h-4 w-4 text-green-500" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {stats?.customers?.total || 0}
-            </div>
-            <div className="flex items-center gap-2 mt-1">
-              <p
-                className={`text-xs ${
-                  (stats?.customers?.percentageChange || 0) >= 0
-                    ? "text-green-600"
-                    : "text-red-600"
-                }`}
-              >
-                {(stats?.customers?.percentageChange || 0) >= 0 ? "+" : ""}
-                {stats?.customers?.percentageChange || 0}%
-              </p>
-              <p className="text-xs text-gray-500">
-                ({stats?.customers?.newThisMonth || 0} new this month)
-              </p>
-            </div>
-          </CardContent>
-        </Card>
+        <StatCard
+          title="Customers"
+          value={stats?.customers?.total || 0}
+          icon={Users}
+          trend={stats?.customers?.percentageChange}
+          trendLabel={`${stats?.customers?.newThisMonth || 0} new this month`}
+          trendDirection={
+            (stats?.customers?.percentageChange || 0) >= 0 ? "up" : "down"
+          }
+          iconBgColor="bg-purple-50"
+          iconColor="text-purple-600"
+        />
       </div>
 
-      {/* Recent orders */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Recent Orders</CardTitle>
+      {/* Recent orders - Made fully responsive */}
+      <Card className="border-0 shadow-sm overflow-hidden">
+        <CardHeader className="border-b border-gray-100 bg-gray-50/50">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+            <CardTitle className="text-lg font-semibold text-gray-900">
+              Recent Orders
+            </CardTitle>
+            <span className="text-xs text-gray-500 flex items-center gap-1">
+              <Clock className="w-3 h-3" />
+              Updated just now
+            </span>
+          </div>
         </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            {stats?.recentOrders?.map((order) => (
-              <div
-                key={order.id}
-                className="flex items-center justify-between border-b border-gray-100 pb-4 last:border-0 last:pb-0"
-              >
-                <div className="flex items-center gap-4">
-                  <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center">
-                    <Package className="h-5 w-5 text-gray-600" />
+        <CardContent className="p-0">
+          {stats?.recentOrders?.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-12 px-4">
+              <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+                <Package className="w-8 h-8 text-gray-400" />
+              </div>
+              <p className="text-gray-500 text-sm">No orders yet</p>
+              <p className="text-gray-400 text-xs mt-1">
+                When customers place orders, they'll appear here
+              </p>
+            </div>
+          ) : (
+            <div className="divide-y divide-gray-100">
+              {stats?.recentOrders?.map((order) => (
+                <div
+                  key={order.id}
+                  className="flex flex-col sm:flex-row sm:items-center justify-between p-4 hover:bg-gray-50/50 transition-colors duration-150 gap-4"
+                >
+                  <div className="flex items-center gap-4 flex-1 min-w-0">
+                    <OrderIcon />
+                    <div className="min-w-0 flex-1">
+                      <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3">
+                        <span className="text-xs text-gray-500">Product:</span>
+                        <p className="text-sm font-medium text-gray-900 truncate">
+                          {order.productName}
+                        </p>
+                      </div>
+                      <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 mt-1">
+                        <span className="text-xs text-gray-500">Customer:</span>
+                        <span className="text-sm font-medium text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full inline-block w-fit">
+                          {order.customerName || "Anonymous Customer"}
+                        </span>
+                      </div>
+                    </div>
                   </div>
-                  <div>
-                    <p className="font-medium text-gray-800">
-                      #{order.id}
-                    </p>
-                    <p className="text-sm text-gray-500">
-                      {order.customerName || "Customer"} • ₦
-                      {order?.total?.toLocaleString()}
-                    </p>
+                  <div className="flex flex-row items-center justify-between sm:justify-end gap-4 ml-0 sm:ml-4">
+                    <StatusBadge status={order.status} />
+                    <span className="text-xs text-gray-400 whitespace-nowrap">
+                      {new Date(order.createdAt).toLocaleDateString("en-US", {
+                        month: "short",
+                        day: "numeric",
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      })}
+                    </span>
                   </div>
                 </div>
-                <span
-                  className={`px-3 py-1 text-xs rounded-full ${
-                    order.status === "COMPLETED"
-                      ? "bg-green-100 text-green-600"
-                      : order.status === "PENDING"
-                        ? "bg-yellow-100 text-yellow-600"
-                        : order.status === "PROCESSING"
-                          ? "bg-blue-100 text-blue-600"
-                          : "bg-gray-100 text-gray-600"
-                  }`}
-                >
-                  {order.status}
-                </span>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>
   );
 }
-
-
-
-// do well to update that order number to product name and also add the price of the product and check to add quantity too. 

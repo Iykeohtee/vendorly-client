@@ -12,6 +12,7 @@ interface CreateOrderData {
   customerName: string;
   customerPhone: string;
   customerId: string;
+  productName: string;
 }
 
 export const useOrder = () => {
@@ -53,5 +54,7 @@ export const useOrder = () => {
 
     // actions
     createOrder: createOrder.mutateAsync,
+
+    isCreating: createOrder.isPending,
   };
 };
