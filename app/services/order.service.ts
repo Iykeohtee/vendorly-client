@@ -46,23 +46,12 @@ export const orderService = {
     dateTo?: string;
   }): Promise<{ orders: Order[]; pagination: any }> => {
     try {
-      store.dispatch(setLoading(true));
-      store.dispatch(setError(null));
-
       const response = await axiosInstance.get("/orders/vendor", { params });
-
-      store.dispatch(
-        setOrders({
-          orders: response.data.orders,
-          pagination: response.data.pagination,
-        }),
-      );
-
+      console.log(response.data)
       return response.data;
     } catch (error: any) {
       const errorMessage =
         error.response?.data?.message || "Failed to fetch orders";
-      store.dispatch(setError(errorMessage));
       throw error;
     } finally {
       store.dispatch(setLoading(false));

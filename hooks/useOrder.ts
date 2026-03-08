@@ -3,7 +3,11 @@ import { useDispatch, useSelector } from "react-redux";
 import { RootState, AppDispatch } from "@/redux/store";
 import { Order } from "@/types/order";
 import { orderService } from "@/app/services/order.service";
-import { addOrder } from "@/redux/slices/orderSlice";
+import {
+  addOrder,
+  setOrders,
+  updateOrderInList,
+} from "@/redux/slices/orderSlice";
 import { setError } from "@/redux/slices/storeSlice";
 
 interface CreateOrderData {
@@ -19,12 +23,13 @@ export const useOrder = () => {
   const dispatch = useDispatch<AppDispatch>();
   const queryClient = useQueryClient();
 
-//   const { user } = useSelector((state: RootState) => state.auth); 
+  //   const { user } = useSelector((state: RootState) => state.auth);
 
   const { orders, selectedOrder, isLoading, error } = useSelector(
     (state: RootState) => state.order,
   );
 
+  // Mutation for creating a new order (tracking WhatsApp click)
   const createOrder = useMutation({
     mutationFn: async (orderData: CreateOrderData) => {
       const response = await orderService.trackWhatsAppClick(orderData);
@@ -45,6 +50,36 @@ export const useOrder = () => {
     },
   });
 
+  // Query for fetching vendor orders with filters
+  const getVendorOrders = useQuery({
+    queryKey: ["vendor-orders"],
+    queryFn: async () => {
+      const response = await orderService.getVendorOrders();
+      dispatch(
+        setOrders({ orders: response.orders, pagination: response.pagination }),
+      );
+      return response;
+    },
+  });
+ 
+
+  // Mutation for updating order status
+  const updateOrderStatus = useMutation({
+    mutationFn: async ({ orderId, data }: { orderId: string; data: any }) => {
+      const response = await orderService.updateOrderStatus(orderId, data);
+      return response;
+    },
+    onSuccess: (data) => {
+      dispatch(updateOrderInList(data));
+      // Invalidate queries to refresh data
+      queryClient.invalidateQueries({ queryKey: ["vendor-orders"] });
+      queryClient.invalidateQueries({ queryKey: ["vendor-stats"] });
+    },
+    onError: (error) => {
+      dispatch(setError(error instanceof Error ? error.message : "Failed to update order"));
+    }
+  });
+
   return {
     // data from redux
     orders,
@@ -54,7 +89,12 @@ export const useOrder = () => {
 
     // actions
     createOrder: createOrder.mutateAsync,
-
     isCreating: createOrder.isPending,
+    getVendorOrders: getVendorOrders.refetch,
+    isFetchingOrders: getVendorOrders.isFetching,
+    isError: getVendorOrders.isError,
+    updateOrderStatus: updateOrderStatus.mutateAsync,
+    isUpdating: updateOrderStatus.isPending
+
   };
 };
