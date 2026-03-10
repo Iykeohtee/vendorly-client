@@ -44,6 +44,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import UpdateOrderModal from "@/components/orders/UpdateOrderModal";
+import OrderDetailsModal from "@/components/orders/OrderDetailModal";
 
 // Format currency
 const formatCurrency = (amount: number = 0) => {
@@ -111,6 +112,9 @@ const OrdersPage = () => {
   const [pageSize, setPageSize] = useState(20);
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
+  const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
+  const [selectedOrderForDetails, setSelectedOrderForDetails] =
+    useState<Order | null>(null);
 
   useEffect(() => {
     getVendorOrders();
@@ -194,6 +198,18 @@ const OrdersPage = () => {
     // Implement delete logic
   };
 
+  // Row click handler
+  const handleRowClick = (order: Order) => {
+    setSelectedOrderForDetails(order);
+    setIsDetailsModalOpen(true);
+  };
+
+  // Details modal close handler
+  const handleDetailsModalClose = () => {
+    setIsDetailsModalOpen(false);
+    setSelectedOrderForDetails(null);
+  };
+
   if (isFetchingOrders && !orders?.length) {
     return <OrdersPageSkeleton />;
   }
@@ -266,7 +282,7 @@ const OrdersPage = () => {
               <CardTitle className="text-sm font-medium text-muted-foreground">
                 Completed
               </CardTitle>
-              <CheckCircle className="h-4 w-4 text-primary" />
+              <CheckCircle className="h-4 w-4 text-emerald-500" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{completedOrders}</div>
@@ -316,7 +332,11 @@ const OrdersPage = () => {
               <TableBody>
                 {paginatedOrders.length > 0 ? (
                   paginatedOrders.map((order: Order) => (
-                    <TableRow key={order.id}>
+                    <TableRow
+                      key={order.id}
+                      className="cursor-pointer hover:bg-muted/50"
+                      onClick={() => handleRowClick(order)}
+                    >
                       <TableCell className="font-medium">
                         #{order.id.slice(-8)}
                       </TableCell>
@@ -327,11 +347,25 @@ const OrdersPage = () => {
                         {formatCurrency(getOrderTotal(order))}
                       </TableCell>
                       <TableCell>
-                        <Badge variant={getStatusVariant(order.status) as any}>
+                        <Badge
+                          variant={
+                            order.status === "COMPLETED"
+                              ? "default"
+                              : (getStatusVariant(order.status) as any)
+                          }
+                          className={
+                            order.status === "COMPLETED"
+                              ? "bg-emerald-500 text-white hover:bg-emerald-600"
+                              : ""
+                          }
+                        >
                           {order.status.toLowerCase()}
                         </Badge>
                       </TableCell>
-                      <TableCell className="text-right">
+                      <TableCell
+                        className="text-right"
+                        onClick={(e) => e.stopPropagation()}
+                      >
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
                             <Button variant="ghost" size="sm">
@@ -339,12 +373,15 @@ const OrdersPage = () => {
                             </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
-                            <DropdownMenuItem
-                              onClick={() => handleUpdate(order)}
-                            >
-                              <Edit3 className="h-4 w-4 mr-2" />
-                              Update
-                            </DropdownMenuItem>
+                            {/* Only show Update option if order is PENDING */}
+                            {order.status === "PENDING" && (
+                              <DropdownMenuItem
+                                onClick={() => handleUpdate(order)}
+                              >
+                                <Edit3 className="h-4 w-4 mr-2" />
+                                Update
+                              </DropdownMenuItem>
+                            )}
                             <DropdownMenuItem
                               onClick={() => handleDelete(order)}
                               className="text-destructive"
@@ -447,12 +484,23 @@ const OrdersPage = () => {
           )}
         </Card>
       </div>
+
+      {/* Update Order Modal */}
       {selectedOrder && (
         <UpdateOrderModal
           isOpen={isUpdateModalOpen}
           onClose={handleModalClose}
           order={selectedOrder}
           onUpdate={handleOrderUpdated}
+        />
+      )}
+
+      {/* Order Details Modal */}
+      {selectedOrderForDetails && (
+        <OrderDetailsModal
+          isOpen={isDetailsModalOpen}
+          onClose={handleDetailsModalClose}
+          order={selectedOrderForDetails}
         />
       )}
     </div>
