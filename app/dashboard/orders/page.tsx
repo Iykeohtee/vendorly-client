@@ -45,6 +45,8 @@ import {
 } from "@/components/ui/select";
 import UpdateOrderModal from "@/components/orders/UpdateOrderModal";
 import OrderDetailsModal from "@/components/orders/OrderDetailModal";
+import { toast } from "sonner";  
+
 
 // Format currency
 const formatCurrency = (amount: number = 0) => {
@@ -103,7 +105,7 @@ const getStatusVariant = (status: string) => {
 };
 
 const OrdersPage = () => {
-  const { orders, getVendorOrders, isFetchingOrders, isError } = useOrder();
+  const { orders, getVendorOrders, isFetchingOrders, deleteOrder } = useOrder();
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<Order["status"] | "ALL">(
     "ALL",
@@ -115,6 +117,7 @@ const OrdersPage = () => {
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
   const [selectedOrderForDetails, setSelectedOrderForDetails] =
     useState<Order | null>(null);
+  const [deletingOrderId, setDeletingOrderId] = useState<string | null>(null);
 
   useEffect(() => {
     getVendorOrders();
@@ -193,9 +196,14 @@ const OrdersPage = () => {
     handleUpdateClick(order);
   };
 
-  const handleDelete = (order: Order) => {
-    console.log("Delete order:", order);
-    // Implement delete logic
+  const handleDelete = async (order: Order) => {
+    setDeletingOrderId(order.id);
+    try {
+      await deleteOrder(order.id);
+      toast.success("Order deleted successfully", { position: "top-center" });
+    } finally {
+      setDeletingOrderId(null);
+    }
   };
 
   // Row click handler
@@ -331,69 +339,87 @@ const OrdersPage = () => {
               </TableHeader>
               <TableBody>
                 {paginatedOrders.length > 0 ? (
-                  paginatedOrders.map((order: Order) => (
-                    <TableRow
-                      key={order.id}
-                      className="cursor-pointer hover:bg-muted/50"
-                      onClick={() => handleRowClick(order)}
-                    >
-                      <TableCell className="font-medium">
-                        #{order.id.slice(-8)}
-                      </TableCell>
-                      <TableCell>{order.customerName || "Anonymous"}</TableCell>
-                      <TableCell>{getProductName(order)}</TableCell>
-                      <TableCell>{formatDate(order.createdAt)}</TableCell>
-                      <TableCell className="font-semibold text-primary">
-                        {formatCurrency(getOrderTotal(order))}
-                      </TableCell>
-                      <TableCell>
-                        <Badge
-                          variant={
-                            order.status === "COMPLETED"
-                              ? "default"
-                              : (getStatusVariant(order.status) as any)
-                          }
-                          className={
-                            order.status === "COMPLETED"
-                              ? "bg-emerald-500 text-white hover:bg-emerald-600"
-                              : ""
-                          }
-                        >
-                          {order.status.toLowerCase()}
-                        </Badge>
-                      </TableCell>
-                      <TableCell
-                        className="text-right"
-                        onClick={(e) => e.stopPropagation()}
+                  paginatedOrders.map((order: Order) => {
+                    const isThisOrderDeleting = deletingOrderId === order.id;
+
+                    return (
+                      <TableRow
+                        key={order.id}
+                        className={`cursor-pointer hover:bg-muted/50 transition-all duration-200 ${
+                          isThisOrderDeleting
+                            ? "opacity-50 pointer-events-none bg-gray-50"
+                            : ""
+                        }`}
+                        onClick={() =>
+                          !isThisOrderDeleting && handleRowClick(order)
+                        }
                       >
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="sm">
-                              <MoreVertical className="h-4 w-4" />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
-                            {/* Only show Update option if order is PENDING */}
-                            {order.status === "PENDING" && (
-                              <DropdownMenuItem
-                                onClick={() => handleUpdate(order)}
+                        <TableCell className="font-medium">
+                          #{order.id.slice(-8)}
+                        </TableCell>
+                        <TableCell>
+                          {order.customerName || "Anonymous"}
+                        </TableCell>
+                        <TableCell>{getProductName(order)}</TableCell>
+                        <TableCell>{formatDate(order.createdAt)}</TableCell>
+                        <TableCell className="font-semibold text-primary">
+                          {formatCurrency(getOrderTotal(order))}
+                        </TableCell>
+                        <TableCell>
+                          <Badge
+                            variant={
+                              order.status === "COMPLETED"
+                                ? "default"
+                                : (getStatusVariant(order.status) as any)
+                            }
+                            className={
+                              order.status === "COMPLETED"
+                                ? "bg-emerald-500 text-white hover:bg-emerald-600"
+                                : ""
+                            }
+                          >
+                            {order.status.toLowerCase()}
+                          </Badge>
+                        </TableCell>
+                        <TableCell
+                          className="text-right"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                disabled={isThisOrderDeleting}
                               >
-                                <Edit3 className="h-4 w-4 mr-2" />
-                                Update
+                                <MoreVertical className="h-4 w-4" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                              {/* Only show Update option if order is PENDING */}
+                              {order.status === "PENDING" && (
+                                <DropdownMenuItem
+                                  onClick={() => handleUpdate(order)}
+                                  disabled={isThisOrderDeleting}
+                                >
+                                  <Edit3 className="h-4 w-4 mr-2" />
+                                  Update
+                                </DropdownMenuItem>
+                              )}
+                              <DropdownMenuItem
+                                onClick={() => handleDelete(order)}
+                                className="text-destructive"
+                                disabled={isThisOrderDeleting}
+                              >
+                                <Trash2 className="h-4 w-4 mr-2" />
+                                {isThisOrderDeleting ? "Deleting..." : "Delete"}
                               </DropdownMenuItem>
-                            )}
-                            <DropdownMenuItem
-                              onClick={() => handleDelete(order)}
-                              className="text-destructive"
-                            >
-                              <Trash2 className="h-4 w-4 mr-2" />
-                              Delete
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      </TableCell>
-                    </TableRow>
-                  ))
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })
                 ) : (
                   <TableRow>
                     <TableCell colSpan={7} className="text-center py-8">

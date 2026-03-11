@@ -11,11 +11,6 @@ import {
   ArrowUpRight,
   ArrowDownRight,
   Receipt,
-  ShoppingBag,
-  Truck,
-  Box,
-  ClipboardList,
-  Archive,
 } from "lucide-react";
 import { useSelector } from "react-redux";
 import { RootState } from "@/redux/store";
@@ -58,6 +53,20 @@ const fetchDashboardStats = async (): Promise<DashboardStats> => {
   const response = await axiosInstance.get("/dashboard/stats");
   console.log(response.data);
   return response.data;
+};
+
+// Helper function to abbreviate large numbers professionally
+const abbreviateNumber = (amount: number): string => {
+  if (amount >= 1_000_000_000) {
+    return `₦${(amount / 1_000_000_000).toFixed(1)}B`;
+  }
+  if (amount >= 1_000_000) {
+    return `₦${(amount / 1_000_000).toFixed(1)}M`;
+  }
+  if (amount >= 1_000) {
+    return `₦${(amount / 1_000).toFixed(1)}K`;
+  }
+  return `₦${amount.toLocaleString()}`;
 };
 
 // Status badge component
@@ -106,7 +115,7 @@ const StatusBadge = ({ status }: { status: string }) => {
   );
 };
 
-// Stat Card Component
+// Stat Card Component - Professional with number abbreviation
 const StatCard = ({
   title,
   value,
@@ -116,6 +125,7 @@ const StatCard = ({
   trendDirection = "up",
   iconBgColor = "bg-emerald-50",
   iconColor = "text-emerald-600",
+  isCurrency = false,
 }: {
   title: string;
   value: string | number;
@@ -125,20 +135,33 @@ const StatCard = ({
   trendDirection?: "up" | "down" | "neutral";
   iconBgColor?: string;
   iconColor?: string;
+  isCurrency?: boolean;
 }) => {
   const isPositive = trendDirection === "up";
+
+  // Format the value appropriately
+  const formattedValue =
+    isCurrency && typeof value === "string"
+      ? value // If it's already formatted currency, keep it
+      : typeof value === "number" && isCurrency
+        ? abbreviateNumber(value)
+        : value;
 
   return (
     <Card className="overflow-hidden border-0 shadow-sm hover:shadow-md transition-all duration-200">
       <CardContent className="p-6">
         <div className="flex items-start justify-between">
-          <div className="space-y-2">
-            <p className="text-sm font-medium text-gray-500">{title}</p>
+          <div className="space-y-2 flex-1 mr-4">
+            <p className="text-sm font-medium text-gray-500 truncate">
+              {title}
+            </p>
             <div className="flex items-baseline gap-2">
-              <span className="text-3xl font-bold text-gray-900">{value}</span>
+              <span className="text-2xl font-bold text-gray-900">
+                {formattedValue}
+              </span>
               {trend !== undefined && (
                 <span
-                  className={`flex items-center text-xs font-medium ${
+                  className={`flex items-center text-xs font-medium whitespace-nowrap ${
                     isPositive ? "text-emerald-600" : "text-rose-600"
                   }`}
                 >
@@ -279,12 +302,12 @@ export default function DashboardPage() {
         <div className="absolute bottom-0 left-0 w-48 h-48 bg-emerald-400/20 rounded-full -translate-x-24 translate-y-24"></div>
       </div>
 
-      {/* Stats cards - Made responsive */}
+      {/* Stats cards - Professional with number abbreviation */}
       <div className="grid gap-5 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
-        {/* Revenue Card */}
+        {/* Revenue Card - Using abbreviation */}
         <StatCard
           title="Total Revenue"
-          value={formatCurrency(stats?.revenue?.total || 0)}
+          value={stats?.revenue?.total || 0}
           icon={DollarSign}
           trend={stats?.revenue?.percentageChange}
           trendLabel="vs last month"
@@ -293,6 +316,7 @@ export default function DashboardPage() {
           }
           iconBgColor="bg-emerald-50"
           iconColor="text-emerald-600"
+          isCurrency={true}
         />
 
         {/* Orders Card */}

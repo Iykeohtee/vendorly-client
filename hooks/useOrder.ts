@@ -5,6 +5,7 @@ import { Order } from "@/types/order";
 import { orderService } from "@/app/services/order.service";
 import {
   addOrder,
+  removeOrderFromList,
   setOrders,
   updateOrderInList,
 } from "@/redux/slices/orderSlice";
@@ -61,7 +62,6 @@ export const useOrder = () => {
       return response;
     },
   });
- 
 
   // Mutation for updating order status
   const updateOrderStatus = useMutation({
@@ -76,8 +76,32 @@ export const useOrder = () => {
       queryClient.invalidateQueries({ queryKey: ["vendor-stats"] });
     },
     onError: (error) => {
-      dispatch(setError(error instanceof Error ? error.message : "Failed to update order"));
-    }
+      dispatch(
+        setError(
+          error instanceof Error ? error.message : "Failed to update order",
+        ),
+      );
+    },
+  });
+
+  // mutation for deleting an order
+  const deleteOrder = useMutation({
+    mutationFn: async (orderId: string) => {
+      await orderService.deleteOrder(orderId);
+    },
+    onSuccess: (_, orderId) => {
+      dispatch(removeOrderFromList(orderId));
+      queryClient.invalidateQueries({ queryKey: ["vendor-orders"] });
+      queryClient.invalidateQueries({ queryKey: ["vendor-stats"] });
+      queryClient.invalidateQueries({ queryKey: ["dashboard-stats"] });
+    },
+    onError: (error) => {
+      dispatch(
+        setError(
+          error instanceof Error ? error.message : "Failed to delete order",
+        ),
+      );
+    },
   });
 
   return {
@@ -94,7 +118,8 @@ export const useOrder = () => {
     isFetchingOrders: getVendorOrders.isFetching,
     isError: getVendorOrders.isError,
     updateOrderStatus: updateOrderStatus.mutateAsync,
-    isUpdating: updateOrderStatus.isPending
-
+    isUpdating: updateOrderStatus.isPending,
+    deleteOrder: deleteOrder.mutateAsync,
+    isDeleting: deleteOrder.isPending,
   };
 };

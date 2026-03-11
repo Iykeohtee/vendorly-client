@@ -24,7 +24,7 @@ export const orderService = {
     customerId: string;
   }): Promise<Order> => {
     try {
-      const response = await axiosInstance.post<Order>( 
+      const response = await axiosInstance.post<Order>(
         "/orders/whatsapp/track",
         data,
       );
@@ -47,7 +47,7 @@ export const orderService = {
   }): Promise<{ orders: Order[]; pagination: any }> => {
     try {
       const response = await axiosInstance.get("/orders/vendor", { params });
-      console.log(response.data)
+      console.log(response.data);
       return response.data;
     } catch (error: any) {
       const errorMessage =
@@ -85,18 +85,21 @@ export const orderService = {
         `/orders/${orderId}/status`,
         data,
       );
-
-      store.dispatch(updateOrderInList(response.data));
       await orderService.getVendorStats();
 
       return response.data;
     } catch (error: any) {
-      const errorMessage =
-        error.response?.data?.message || "Failed to update order";
-      store.dispatch(setError(errorMessage));
       throw error;
-    } finally {
-      store.dispatch(setUpdating(false));
+    }
+  },
+
+  // Delete order
+  deleteOrder: async (orderId: string): Promise<void> => {
+    try {
+      await axiosInstance.delete(`/orders/${orderId}`);
+    } catch (error) {
+      console.error("Error deleting order:", error);
+      throw error;
     }
   },
 
@@ -146,7 +149,7 @@ export const orderService = {
     });
   },
 
-  // Remove order from list (if needed)
+  // Remove order from list
   removeOrder: (orderId: string): void => {
     store.dispatch(removeOrderFromList(orderId));
   },
