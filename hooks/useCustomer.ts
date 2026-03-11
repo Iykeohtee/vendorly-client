@@ -6,6 +6,7 @@ import {
   setFilters,
   clearSelectedCustomer,
   resetFilters,
+  setCustomers,
 } from "@/redux/slices/customerSlice";
 import { CustomerQueryParams } from "@/types/customer";
 
@@ -28,7 +29,16 @@ export const useCustomer = () => {
   // Query for fetching customers
   const customersQuery = useQuery({
     queryKey: ["customers", filters],
-    queryFn: () => customerService.getCustomers(filters),
+    queryFn: async () => {
+      const response = await customerService.getCustomers(filters);
+      dispatch(
+        setCustomers({
+          customers: response.customers,
+          pagination: response.pagination,
+        }),
+      );
+      return response;
+    },
   });
 
   // Query for fetching customer stats

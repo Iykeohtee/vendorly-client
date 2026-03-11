@@ -21,6 +21,7 @@ class CustomerService {
     const response = await axiosInstance.get(
       `/customers?${queryParams.toString()}`,
     );
+    console.log(response)
     return response.data;
   }
 

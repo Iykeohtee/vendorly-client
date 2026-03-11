@@ -95,6 +95,7 @@ export default function RootLayout({
     "/dashboard/products",
     "/dashboard/products/addProduct",
     "/dashboard/orders",
+    "/dashboard/customers",
     `/dashboard/orders/${pathName.split("/")[3]}`, 
   ];
 
