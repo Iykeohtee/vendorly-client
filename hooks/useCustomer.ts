@@ -7,10 +7,12 @@ import {
   clearSelectedCustomer,
   resetFilters,
   setCustomers,
+  setSelectedCustomer,
 } from "@/redux/slices/customerSlice";
 import { CustomerQueryParams } from "@/types/customer";
+import { setStats } from "@/redux/slices/customerSlice";
 
-export const useCustomer = () => {
+export const useCustomer = (customerId?: string) => {
   const dispatch = useDispatch<AppDispatch>();
   const queryClient = useQueryClient();
 
@@ -41,20 +43,26 @@ export const useCustomer = () => {
     },
   });
 
+  // Query for fetching a customer
+  const customerByIdQuery = useQuery({
+    queryKey: ["customer", customerId],
+    queryFn: async () => {
+      const response = await customerService.getCustomerById(customerId!);
+      dispatch(setSelectedCustomer(response));
+      return response;
+    },
+    enabled: !!customerId, // This controls when the query runs
+  });
+
   // Query for fetching customer stats
   const statsQuery = useQuery({
     queryKey: ["customer-stats"],
-    queryFn: () => customerService.getCustomerStats(),
+    queryFn: async () => {
+      const response = await customerService.getCustomerStats();
+      dispatch(setStats(response));
+      return response;
+    },
   });
-
-  // Query for fetching single customer
-  const useCustomerById = (id: string) => {
-    return useQuery({
-      queryKey: ["customer", id],
-      queryFn: () => customerService.getCustomerById(id),
-      enabled: !!id,
-    });
-  };
 
   // Actions
   const updateFilters = (newFilters: Partial<CustomerQueryParams>) => {
@@ -86,10 +94,11 @@ export const useCustomer = () => {
     isLoading: isLoading || customersQuery.isLoading,
     isFetchingOne,
     isFetching: customersQuery.isFetching,
-    error,
+    isLoadingStats: statsQuery.isPending,
+    isLoadingCustomer: customerByIdQuery.isPending,
 
-    // Queries
-    useCustomerById,
+    // Error states
+    error,
 
     // Actions
     updateFilters,

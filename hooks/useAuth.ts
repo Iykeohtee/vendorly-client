@@ -42,14 +42,18 @@ export const useAuth = () => {
 
   // Check authentication status on mount, but skip on auth pages
   useEffect(() => {
-    // Skip auth check on auth pages
     if (isAuthPage) {
-      dispatch(setAuthLoading(false)); // Set loading to false immediately
+      dispatch(setAuthLoading(false));
+      return;
+    }
+
+    if (user) {
+      dispatch(setAuthLoading(false));
       return;
     }
 
     checkAuthStatus();
-  }, [isAuthPage]);
+  }, [isAuthPage, user]);
 
   const checkAuthStatus = async () => {
     try {
