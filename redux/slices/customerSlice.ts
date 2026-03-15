@@ -1,11 +1,12 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { Customer, CustomerStats, CustomersResponse } from "@/types/customer";
+import { Customer, CustomerStats, CustomersResponse, Order } from "@/types/customer";
 
 export interface CustomerState {
   // Data
   customers: Customer[];
   selectedCustomer: Customer | null;
   stats: CustomerStats | null;
+  customerOrders: Order[]; 
   pagination: {
     page: number;
     limit: number;
@@ -31,6 +32,7 @@ export interface CustomerState {
 const initialState: CustomerState = {
   customers: [],
   selectedCustomer: null,
+  customerOrders: [],
   stats: null,
   pagination: null,
   isLoading: false,
@@ -76,6 +78,12 @@ const customerSlice = createSlice({
       state.stats = action.payload;
     },
 
+    // set orders for selected customer 
+    setCustomerOrders: (state, action: PayloadAction<Order[]>) => {
+      if (state.selectedCustomer) {
+        state.customerOrders = action.payload
+      }
+    },
     // Update filters
     setFilters: (
       state,
@@ -123,6 +131,7 @@ export const {
   clearSelectedCustomer,
   resetFilters,
   clearCustomers,
+  setCustomerOrders
 } = customerSlice.actions;
 
 export default customerSlice.reducer;

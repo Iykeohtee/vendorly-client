@@ -184,7 +184,7 @@ const CustomersPage = () => {
                 </DropdownMenuContent>
               </DropdownMenu>
 
-              <Button variant="outline" size="sm" className="gap-2">
+              <Button variant="outline" size="sm" className="gap-2" disabled>
                 <Download className="h-4 w-4" />
                 <span className="hidden sm:inline">Export</span>
               </Button>
@@ -383,6 +383,7 @@ const CustomersPage = () => {
                                       e.stopPropagation();
                                       window.location.href = `mailto:${customer.email}`;
                                     }}
+                                    disabled
                                   >
                                     <Mail className="h-5 w-5" />
                                   </Button>

@@ -1,9 +1,9 @@
 import axiosInstance from "@/lib/axios";
 import {
-  CustomerDetail,
   CustomerStats,
   CustomersResponse,
   CustomerQueryParams,
+  Customer,
 } from "@/types/customer";
 
 class CustomerService {
@@ -25,7 +25,7 @@ class CustomerService {
   }
 
   // Get customer by ID with their orders
-  async getCustomerById(id: string): Promise<CustomerDetail> {
+  async getCustomerById(id: string): Promise<Customer> {
     const response = await axiosInstance.get(`/customers/${id}`);
     return response.data;
   }
@@ -41,7 +41,7 @@ class CustomerService {
     const response = await axiosInstance.get(
       `/customers/${customerId}/orders`,
     );
-    return response.data;
+    return response.data.orders;
   }
 }
 

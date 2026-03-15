@@ -8,9 +8,11 @@ import {
   resetFilters,
   setCustomers,
   setSelectedCustomer,
+  setStats,
+  setCustomerOrders
 } from "@/redux/slices/customerSlice";
 import { CustomerQueryParams } from "@/types/customer";
-import { setStats } from "@/redux/slices/customerSlice";
+
 
 export const useCustomer = (customerId?: string) => {
   const dispatch = useDispatch<AppDispatch>();
@@ -21,6 +23,7 @@ export const useCustomer = (customerId?: string) => {
     customers,
     selectedCustomer,
     stats,
+    customerOrders,
     pagination,
     isLoading,
     isFetchingOne,
@@ -64,6 +67,16 @@ export const useCustomer = (customerId?: string) => {
     },
   });
 
+  // Query for fetching customer orders
+  const customerOrdersQuery = useQuery({
+    queryKey: ["customer-orders", customerId],
+    queryFn: async () => {
+      const response = await customerService.getCustomerOrders(customerId!);
+      dispatch(setCustomerOrders(response));
+      return response;
+    },
+  });
+
   // Actions
   const updateFilters = (newFilters: Partial<CustomerQueryParams>) => {
     dispatch(setFilters(newFilters));
@@ -87,6 +100,7 @@ export const useCustomer = (customerId?: string) => {
     customers,
     selectedCustomer,
     stats,
+    customerOrders,
     pagination,
     filters,
 
@@ -96,6 +110,9 @@ export const useCustomer = (customerId?: string) => {
     isFetching: customersQuery.isFetching,
     isLoadingStats: statsQuery.isPending,
     isLoadingCustomer: customerByIdQuery.isPending,
+    isLoadingCustomerOrders: customerOrdersQuery.isPending,
+
+    customerOrdersQuery,
 
     // Error states
     error,

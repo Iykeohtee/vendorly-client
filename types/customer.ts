@@ -8,18 +8,21 @@ export interface Customer {
   totalSpent: number;
   lastOrderDate: string | null;
   createdAt: string;
+  orders?: Order[];
 }
 
-export interface CustomerDetail extends Customer {
-  orders: Array<{
-    id: string;
-    orderNumber: string;
-    total: number | null;
-    status: string;
-    createdAt: string;
-    items: any[];
-  }>;
+export interface Order {
+  id: string;
+  orderNumber: string;
+  total: number | null;
+  status: string;
+  createdAt: string;
+  items: any[];
 }
+
+// export interface CustomerDetail extends Customer {
+//   orders: Order[];
+// }
 
 export interface CustomerStats {
   totalCustomers: number;
