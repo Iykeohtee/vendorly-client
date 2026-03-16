@@ -99,6 +99,7 @@ export default function RootLayout({
     "/dashboard/customers",
     `/dashboard/customers/${pathName.split("/")[3]}`,
     "/dashboard/finances",
+    "/dashboard/profile",
   ];
 
   const isStorePage =

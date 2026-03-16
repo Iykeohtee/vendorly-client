@@ -21,9 +21,8 @@ export const DailyRevenueChart = ({
   days,
   formatCurrency,
 }: DailyRevenueChartProps) => {
+  // ALL HOOKS MUST BE CALLED BEFORE ANY CONDITIONAL RETURNS
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
-
-  if (isLoading) return <DailyRevenueChartSkeleton />;
 
   // Always show last 7 days for the chart (clean and simple)
   const chartData = useMemo(() => {
@@ -32,8 +31,13 @@ export const DailyRevenueChart = ({
   }, [data]);
 
   // Calculate metrics
-  const totalRevenue = data.reduce((sum, day) => sum + day.revenue, 0);
+  const totalRevenue = useMemo(
+    () => data.reduce((sum, day) => sum + day.revenue, 0),
+    [data],
+  );
+
   const averageRevenue = data.length ? totalRevenue / data.length : 0;
+
   const lastDayRevenue = data[data.length - 1]?.revenue || 0;
   const previousDayRevenue = data[data.length - 2]?.revenue || 0;
   const trend = lastDayRevenue - previousDayRevenue;
@@ -51,6 +55,9 @@ export const DailyRevenueChart = ({
     if (date.toDateString() === yesterday.toDateString()) return "Yesterday";
     return date.toLocaleDateString("en-US", { weekday: "short" });
   };
+
+  // NOW we can have conditional returns
+  if (isLoading) return <DailyRevenueChartSkeleton />;
 
   return (
     <Card className="h-full">
@@ -138,7 +145,7 @@ export const DailyRevenueChart = ({
           </div>
 
           {/* Hover tooltip */}
-          {hoveredIndex !== null && (
+          {hoveredIndex !== null && chartData[hoveredIndex] && (
             <div
               className="absolute bg-white shadow-lg rounded-lg p-2 z-10 border min-w-[120px]"
               style={{
