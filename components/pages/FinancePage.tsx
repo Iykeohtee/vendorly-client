@@ -23,7 +23,6 @@ export default function FinancePage() {
     isLoadingTopCustomers,
     isLoadingCustomerDetail,
     isLoadingDailyRevenue,
-    topCustomersLimit,
     dailyRevenueDays,
     fetchCustomerDetail,
     updateTopCustomersLimit,
