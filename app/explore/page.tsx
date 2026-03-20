@@ -1,11 +1,7 @@
-import React from 'react'
+import ExplorePage from "@/components/pages/ExplorePage"
 
 const page = () => {
-  return (
-    <div>
-      <h1>Explore page</h1>
-    </div>
-  )
+  return <ExplorePage/>
 }
 
 export default page

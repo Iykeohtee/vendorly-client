@@ -6,6 +6,7 @@ import orderReducer from './slices/orderSlice';
 import customerReducer from './slices/customerSlice';
 import financeReducer from './slices/financeSlice';
 import profileReducer from './slices/profileSlice';
+import exploreReducer from './slices/exploreSlice'
 
 
 export const store = configureStore({
@@ -17,6 +18,7 @@ export const store = configureStore({
     customer: customerReducer,
     finance: financeReducer,
     profile: profileReducer,
+    explore: exploreReducer
   },
 });
 
