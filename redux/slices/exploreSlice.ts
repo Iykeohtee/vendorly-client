@@ -4,7 +4,7 @@ import {
   Category,
   ProductsResponse,
   ExploreState,
-  ExploreFilters
+  ExploreFilters,
 } from "@/types/explore";
 
 const initialState: ExploreState = {
@@ -14,10 +14,14 @@ const initialState: ExploreState = {
   categories: [],
   pagination: null,
 
+  trendingToday: [],
+  trendingWeek: [],
+
   // UI States
   isLoadingProducts: false,
   isLoadingCategories: false,
   isLoadingProduct: false,
+  isLoadingTrending: false,
   error: null,
 
   // Filters
@@ -59,6 +63,17 @@ const exploreSlice = createSlice({
       state.selectedProduct = action.payload;
     },
 
+    setLoadingTrending: (state, action: PayloadAction<boolean>) => {
+      state.isLoadingTrending = action.payload;
+    },
+
+    setTrendingToday: (state, action: PayloadAction<any>) => {
+      state.trendingToday = action.payload.products;
+    },
+    setTrendingWeek: (state, action: PayloadAction<any>) => {
+      state.trendingWeek = action.payload.products;
+    },
+
     // Filters
     setFilters: (state, action: PayloadAction<Partial<ExploreFilters>>) => {
       state.filters = { ...state.filters, ...action.payload };
@@ -91,10 +106,13 @@ export const {
   setLoadingProducts,
   setLoadingCategories,
   setLoadingProduct,
+  setLoadingTrending,
   setError,
   setProducts,
   setCategories,
   setSelectedProduct,
+  setTrendingToday,
+  setTrendingWeek,
   setFilters,
   setPage,
   resetFilters,

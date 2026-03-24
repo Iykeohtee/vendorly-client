@@ -7,6 +7,7 @@ export interface Product {
   images: string[];
   vendorId: string;
   category: string;
+  tags: string[];
   vendor?: {
     id: string;
     storeName: string;

@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useMemo } from "react";
+import { useExplore } from "@/hooks/useExplore";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import Button from "@/components/ui/Button";
 import { Card } from "../ui/Card";
@@ -13,221 +14,69 @@ import { Categories } from "@/components/explore/Categories";
 import { ProductCard } from "@/components/explore/ProductCard";
 import { SectionHeader } from "@/components/explore/SectionHeader";
 import { TopVendors } from "@/components/explore/TopVendors";
-import Navbar from "../layout/Navbar";
-import {
-  Flame,
-  TrendingUp,
-  Clock,
-  Filter as FilterIcon,
-  Award,
-} from "lucide-react";
-
-// Mock data (replace with actual data from your API)
-const trendingToday = [
-  {
-    id: 1,
-    name: "AirPods Pro Max 2024",
-    vendor: "TechZone NG",
-    price: 185000,
-    originalPrice: 220000,
-    rating: 4.9,
-    reviews: 312,
-    image: "🎧",
-    tag: "Hot Deal",
-    sales: 89,
-  },
-  {
-    id: 2,
-    name: "Samsung Galaxy S24 Ultra Case",
-    vendor: "PhoneWorld",
-    price: 8500,
-    originalPrice: 12000,
-    rating: 4.7,
-    reviews: 187,
-    image: "📱",
-    tag: "Bestseller",
-    sales: 234,
-  },
-  {
-    id: 3,
-    name: "Nike Air Max 270 React",
-    vendor: "Sneaker Hub",
-    price: 65000,
-    originalPrice: 78000,
-    rating: 4.8,
-    reviews: 145,
-    image: "👟",
-    tag: "Limited",
-    sales: 56,
-  },
-  {
-    id: 4,
-    name: "LED Ring Light 18inch",
-    vendor: "CreatorTools",
-    price: 15000,
-    originalPrice: 22000,
-    rating: 4.6,
-    reviews: 98,
-    image: "💡",
-    tag: "Flash Sale",
-    sales: 167,
-  },
-];
-
-const trendingThisWeek = [
-  {
-    id: 5,
-    name: "MacBook Pro M3 Sleeve",
-    vendor: "LaptopGear",
-    price: 12000,
-    originalPrice: 15000,
-    rating: 4.5,
-    reviews: 76,
-    image: "💼",
-    category: "Accessories",
-  },
-  {
-    id: 6,
-    name: "Wireless Charging Pad 3-in-1",
-    vendor: "ChargePro",
-    price: 18500,
-    originalPrice: 25000,
-    rating: 4.8,
-    reviews: 203,
-    image: "🔋",
-    category: "Electronics",
-  },
-  {
-    id: 7,
-    name: "Vintage Denim Jacket",
-    vendor: "StyleVault",
-    price: 22000,
-    originalPrice: 28000,
-    rating: 4.6,
-    reviews: 64,
-    image: "🧥",
-    category: "Fashion",
-  },
-  {
-    id: 8,
-    name: "Smart Home Speaker",
-    vendor: "AudioMax",
-    price: 35000,
-    originalPrice: 42000,
-    rating: 4.7,
-    reviews: 189,
-    image: "🔊",
-    category: "Electronics",
-  },
-  {
-    id: 9,
-    name: "Organic Skincare Set",
-    vendor: "GlowUp Beauty",
-    price: 9800,
-    originalPrice: 14000,
-    rating: 4.9,
-    reviews: 321,
-    image: "🧴",
-    category: "Health & Beauty",
-  },
-  {
-    id: 10,
-    name: "Minimalist Watch Gold",
-    vendor: "TimeKeepers",
-    price: 28000,
-    originalPrice: 35000,
-    rating: 4.4,
-    reviews: 112,
-    image: "⌚",
-    category: "Accessories",
-  },
-];
-
-const newArrivals = [
-  {
-    id: 11,
-    name: "Bluetooth Earbuds TWS",
-    vendor: "AudioMax",
-    price: 7500,
-    rating: 4.3,
-    reviews: 12,
-    image: "🎵",
-    daysAgo: 1,
-  },
-  {
-    id: 12,
-    name: "Canvas Tote Bag",
-    vendor: "StyleVault",
-    price: 5500,
-    rating: 4.6,
-    reviews: 8,
-    image: "👜",
-    daysAgo: 1,
-  },
-  {
-    id: 13,
-    name: "Portable Blender USB",
-    vendor: "HomeEssentials",
-    price: 11000,
-    rating: 4.5,
-    reviews: 5,
-    image: "🥤",
-    daysAgo: 2,
-  },
-  {
-    id: 14,
-    name: "Desk Organizer Wood",
-    vendor: "CraftHouse",
-    price: 8200,
-    rating: 4.7,
-    reviews: 3,
-    image: "🗂️",
-    daysAgo: 2,
-  },
-  {
-    id: 15,
-    name: "Running Shorts Dri-Fit",
-    vendor: "FitGear",
-    price: 6800,
-    rating: 4.4,
-    reviews: 15,
-    image: "🩳",
-    daysAgo: 3,
-  },
-  {
-    id: 16,
-    name: "Aromatherapy Diffuser",
-    vendor: "GlowUp Beauty",
-    price: 13500,
-    rating: 4.8,
-    reviews: 7,
-    image: "🌿",
-    daysAgo: 3,
-  },
-];
-
-const allProducts = [
-  ...trendingToday.map((p) => ({ ...p, category: "Electronics" })),
-  ...trendingThisWeek,
-  ...newArrivals.map((p) => ({ ...p, category: "Gadgets" })),
-];
+import { Flame, TrendingUp, Clock, Filter as FilterIcon } from "lucide-react";
 
 const formatPrice = (price: number) => `₦${price.toLocaleString()}`;
 
 export default function Explore() {
   const [searchQuery, setSearchQuery] = useState("");
-  const [activeCategory, setActiveCategory] = useState("All");
-  const [wishlist, setWishlist] = useState<number[]>([]);
+  const [wishlist, setWishlist] = useState<string[]>([]);
 
-  const toggleWishlist = (id: number) => {
+  const {
+    trendingToday,
+    trendingWeek,
+    isLoadingTrending,
+    products,
+    categories,
+    filters,
+    isLoadingCategories,
+    updateFilters,
+    changePage,
+    refreshProducts,
+    pagination,
+  } = useExplore();
+
+  // Handle category change from Categories component
+  const handleCategoryChange = (category: string) => {
+    // If category is "All", pass undefined to clear the filter
+    updateFilters({
+      category: category === "All" ? undefined : category,
+      page: 1,
+    });
+  };
+
+  // Handle search
+  const handleSearch = (query: string) => {
+    setSearchQuery(query);
+    updateFilters({ search: query || undefined, page: 1 });
+  };
+
+  // Handle wishlist toggle
+  const toggleWishlist = (id: string) => {
     setWishlist((prev) =>
       prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id],
     );
   };
 
-  const handleSearch = (query: string) => {
-    setSearchQuery(query);
+  // Handle view details
+  const handleViewDetails = (id: string) => {
+    console.log("View details for product:", id);
+    // router.push(`/explore/${id}`);
   };
+
+  const newArrivals = useMemo(() => {
+    return [...products]
+      .sort(
+        (a, b) =>
+          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+      )
+      .slice(0, 6);
+  }, [products]);
+
+  // Refresh products when filters change
+  useEffect(() => {
+    refreshProducts();
+  }, [filters]);
 
   return (
     <div className="min-h-screen bg-[#f9fafb]">
@@ -237,9 +86,13 @@ export default function Explore() {
         onSearch={handleSearch}
       />
       <HeroBanner />
+
+      {/* Categories Component*/}
       <Categories
-        activeCategory={activeCategory}
-        onCategoryChange={setActiveCategory}
+        activeCategory={filters.category || "All"}
+        onCategoryChange={handleCategoryChange}
+        categories={categories}
+        isLoading={isLoadingCategories}
       />
 
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-12">
@@ -248,20 +101,31 @@ export default function Explore() {
           <SectionHeader
             icon={Flame}
             title="Trending Today"
-            subtitle="Most popular products right now"
+            subtitle="Hottest products right now"
             iconBg="bg-[#ef4444]/10"
           />
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            {trendingToday.map((product) => (
-              <ProductCard
-                key={product.id}
-                product={product}
-                isWishlisted={wishlist.includes(product.id)}
-                onToggleWishlist={toggleWishlist}
-                formatPrice={formatPrice}
-              />
-            ))}
-          </div>
+          {isLoadingTrending ? (
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+              {[1, 2, 3, 4].map((i) => (
+                <div
+                  key={i}
+                  className="h-64 bg-gray-100 rounded-xl animate-pulse"
+                />
+              ))}
+            </div>
+          ) : (
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+              {trendingToday?.map((product) => (
+                <ProductCard
+                  key={product.id}
+                  product={product}
+                  isWishlisted={false}
+                  onToggleWishlist={() => {}}
+                  formatPrice={formatPrice}
+                />
+              ))}
+            </div>
+          )}
         </section>
 
         {/* Top Vendors */}
@@ -269,98 +133,21 @@ export default function Explore() {
 
         {/* Trending This Week */}
         <section>
-          <div className="flex items-center justify-between mb-6">
-            <div className="flex items-center gap-3">
-              <div className="h-10 w-10 rounded-xl bg-[#f59e0b]/10 flex items-center justify-center">
-                <TrendingUp className="h-5 w-5 text-[#f59e0b]" />
-              </div>
-              <div>
-                <h2 className="text-xl sm:text-2xl font-bold text-[#111827]">
-                  Trending This Week
-                </h2>
-                <p className="text-sm text-[#6b7280]">
-                  Popular picks from this week
-                </p>
-              </div>
-            </div>
-            <Tabs defaultValue="all" className="hidden sm:block">
-              <TabsList className="h-9 bg-[#f3f4f6] p-1">
-                <TabsTrigger
-                  value="all"
-                  className="text-xs data-[state=active]:bg-white data-[state=active]:text-[#10b981] data-[state=active]:shadow-sm"
-                >
-                  All
-                </TabsTrigger>
-                <TabsTrigger
-                  value="electronics"
-                  className="text-xs data-[state=active]:bg-white data-[state=active]:text-[#10b981]"
-                >
-                  Electronics
-                </TabsTrigger>
-                <TabsTrigger
-                  value="fashion"
-                  className="text-xs data-[state=active]:bg-white data-[state=active]:text-[#10b981]"
-                >
-                  Fashion
-                </TabsTrigger>
-                <TabsTrigger
-                  value="beauty"
-                  className="text-xs data-[state=active]:bg-white data-[state=active]:text-[#10b981]"
-                >
-                  Beauty
-                </TabsTrigger>
-              </TabsList>
-            </Tabs>
-          </div>
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {trendingThisWeek.map((product) => (
-              <Card
+          <SectionHeader
+            icon={TrendingUp}
+            title="Trending This Week"
+            subtitle="Popular picks from this week"
+            iconBg="bg-[#f59e0b]/10"
+          />
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            {trendingWeek?.map((product) => (
+              <ProductCard
                 key={product.id}
-                className="group flex overflow-hidden transition-all hover:shadow-md border border-[#e5e7eb]"
-              >
-                <div className="w-28 sm:w-32 shrink-0 bg-[#f9fafb] flex items-center justify-center">
-                  <span className="text-4xl">{product.image}</span>
-                </div>
-                <div className="flex-1 p-4 flex flex-col justify-between">
-                  <div>
-                    <div className="flex items-center justify-between mb-1">
-                      <Badge
-                        variant="outline"
-                        className="text-[10px] px-1.5 py-0 border-[#e5e7eb] text-[#6b7280]"
-                      >
-                        {product.category}
-                      </Badge>
-                      <button onClick={() => toggleWishlist(product.id)}>
-                        <Heart
-                          className={`h-4 w-4 ${wishlist.includes(product.id) ? "fill-[#ef4444] text-[#ef4444]" : "text-[#9ca3af] hover:text-[#ef4444]"}`}
-                        />
-                      </button>
-                    </div>
-                    <h3 className="font-semibold text-sm line-clamp-1 mb-0.5 text-[#111827]">
-                      {product.name}
-                    </h3>
-                    <p className="text-xs text-[#6b7280] mb-2">
-                      {product.vendor}
-                    </p>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <span className="font-bold text-[#10b981]">
-                        {formatPrice(product.price)}
-                      </span>
-                      <span className="text-xs text-[#9ca3af] line-through ml-1">
-                        {formatPrice(product.originalPrice)}
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-0.5 text-xs">
-                      <Star className="h-3 w-3 fill-[#f59e0b] text-[#f59e0b]" />
-                      <span className="font-medium text-[#111827]">
-                        {product.rating}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              </Card>
+                product={product}
+                isWishlisted={false}
+                onToggleWishlist={() => {}}
+                formatPrice={formatPrice}
+              />
             ))}
           </div>
         </section>
@@ -381,11 +168,25 @@ export default function Explore() {
                 className="group overflow-hidden transition-all hover:shadow-md hover:-translate-y-0.5 border border-[#e5e7eb]"
               >
                 <div className="relative aspect-square bg-[#f9fafb] flex items-center justify-center">
-                  <span className="text-4xl">{product.image}</span>
+                  {product.images?.[0]?.startsWith("http") ? (
+                    <img
+                      src={product.images[0]}
+                      alt={product.name}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <span className="text-4xl">
+                      {product.images?.[0] || "📦"}
+                    </span>
+                  )}
                   <Badge className="absolute top-2 left-2 bg-[#3b82f6] text-white text-[10px] border-0">
-                    {product.daysAgo === 1
-                      ? "New today"
-                      : `${product.daysAgo}d ago`}
+                    {(() => {
+                      const daysAgo = Math.floor(
+                        (Date.now() - new Date(product.createdAt).getTime()) /
+                          (1000 * 60 * 60 * 24),
+                      );
+                      return daysAgo === 0 ? "New today" : `${daysAgo}d ago`;
+                    })()}
                   </Badge>
                   <button
                     onClick={() => toggleWishlist(product.id)}
@@ -400,14 +201,18 @@ export default function Explore() {
                   <h3 className="font-medium text-xs line-clamp-1 text-[#111827]">
                     {product.name}
                   </h3>
-                  <p className="text-[10px] text-[#6b7280]">{product.vendor}</p>
+                  <p className="text-[10px] text-[#6b7280]">
+                    {product.vendor?.storeName || "Unknown Store"}
+                  </p>
                   <div className="flex items-center justify-between pt-1">
                     <span className="font-bold text-sm text-[#10b981]">
                       {formatPrice(product.price)}
                     </span>
                     <div className="flex items-center gap-0.5 text-[10px]">
                       <Star className="h-2.5 w-2.5 fill-[#f59e0b] text-[#f59e0b]" />
-                      <span className="text-[#111827]">{product.rating}</span>
+                      <span className="text-[#111827]">
+                        {product.rating || "4.5"}
+                      </span>
                     </div>
                   </div>
                 </CardContent>
@@ -428,7 +233,7 @@ export default function Explore() {
                   Browse All Products
                 </h2>
                 <p className="text-sm text-[#6b7280]">
-                  {allProducts.length} products available
+                  {products.length} products available
                 </p>
               </div>
             </div>
@@ -441,9 +246,9 @@ export default function Explore() {
             </Button>
           </div>
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5">
-            {allProducts.map((product) => (
+            {products.map((product) => (
               <ProductCard
-                key={`all-${product.id}`}
+                key={product.id}
                 product={product}
                 isWishlisted={wishlist.includes(product.id)}
                 onToggleWishlist={toggleWishlist}
@@ -456,6 +261,8 @@ export default function Explore() {
               variant="outline"
               size="lg"
               className="gap-2 border-[#e5e7eb] text-[#374151] hover:bg-[#f3f4f6] hover:border-[#10b981]/20"
+              onClick={() => changePage(filters.page + 1)}
+              disabled={!pagination || filters.page >= pagination.pages}
             >
               Load More Products <ChevronRight className="h-4 w-4" />
             </Button>

@@ -1,4 +1,5 @@
 export interface Product {
+  createdAt: string | number | Date;
   id: string;
   name: string;
   description: string;
@@ -9,9 +10,11 @@ export interface Product {
   quantity: number;
   discountPrice?: number;
   performanceScore?: number;
-  
+  originalPrice?: number;
+  rating?: number;
   // Aggregated stats
   ordersCount?: number;
+  products?: string[];
   
   vendor: {
     id: string;
@@ -31,6 +34,7 @@ export interface ProductsResponse {
     total: number;
     pages: number;
   };
+  data: any
 }
 
 export interface Category {
@@ -56,11 +60,14 @@ export interface ExploreState {
     total: number;
     pages: number;
   } | null;
+  trendingToday: Product[];
+  trendingWeek: Product[]
 
   // UI States
   isLoadingProducts: boolean;
   isLoadingCategories: boolean;
   isLoadingProduct: boolean;
+  isLoadingTrending: boolean;
   error: string | null;
 
   // Filters

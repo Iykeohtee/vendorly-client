@@ -14,6 +14,9 @@ import {
   setFilters,
   setPage,
   clearSelectedProduct,
+  setLoadingTrending,
+  setTrendingToday,
+  setTrendingWeek,
 } from "@/redux/slices/exploreSlice";
 import { ExploreFilters } from "@/types/explore";
 
@@ -52,6 +55,50 @@ export const useExplore = () => {
         throw error;
       } finally {
         dispatch(setLoadingProducts(false));
+      }
+    },
+  });
+
+  // Query for trending today
+  const trendingTodayQery = useQuery({
+    queryKey: ["explore", "trending", "today"],
+    queryFn: async () => {
+      dispatch(setLoadingTrending(true));
+      try {
+        const response = await exploreService.getTrendingToday(10);
+        dispatch(setTrendingToday(response));
+        return response;
+      } catch (error: any) {
+        dispatch(
+          setError(
+            error.response?.data?.message || "Failed to fetch trending today",
+          ),
+        );
+        throw error;
+      } finally {
+        dispatch(setLoadingTrending(false));
+      }
+    },
+  });
+
+  // Query for trending this week
+  const trendingWeekQuery = useQuery({
+    queryKey: ["explore", "trending", "week"],
+    queryFn: async () => {
+      dispatch(setLoadingTrending(true));
+      try {
+        const response = await exploreService.getTrendingThisWeek(20);
+        dispatch(setTrendingWeek(response));
+        return response;
+      } catch (error: any) {
+        dispatch(
+          setError(
+            error.response?.data?.message || "Failed to fetch trending week",
+          ),
+        );
+        throw error;
+      } finally {
+        dispatch(setLoadingTrending(false));
       }
     },
   });
@@ -138,6 +185,10 @@ export const useExplore = () => {
   }, []);
 
   return {
+    trendingToday: explore.trendingToday,
+    trendingWeek: explore.trendingWeek,
+    isLoadingTrending: explore.isLoadingTrending,
+
     // Data
     products: explore.products,
     categories: explore.categories,
@@ -158,6 +209,8 @@ export const useExplore = () => {
     productsQuery,
     categoriesQuery,
     useProductDetails,
+    trendingTodayQery,
+    trendingWeekQuery,
 
     // Actions
     updateFilters,

@@ -11,8 +11,38 @@ export const exploreService = {
     const params: any = { page, limit };
     if (category) params.category = category;
 
-    const response = await axiosInstance.get("/explore/products"); 
-    console.log(response.data)
+    const response = await axiosInstance.get("/explore/products", { params });
+    return response.data;
+  },
+
+  getTrendingToday: async (limit?: number, category?: string): Promise<any> => {
+    const params: any = {};
+    if (limit) params.limit = limit;
+    if (category) params.category = category;
+
+    const response = await axiosInstance.get("/explore/trending/today", {params});
+    return response.data;
+  },
+
+  getTrendingThisWeek: async (
+    limit?: number,
+    category?: string,
+  ): Promise<any> => {
+    const params: any = {};
+    if (limit) params.limit = limit;
+    if (category) params.category = category;
+
+    const response = await axiosInstance.get("/explore/trending/week", {params});
+    return response.data;
+  },
+
+  getAllTrending: async (limit?: number): Promise<any> => {
+    const params: any = {};
+    if (limit) params.limit = limit;
+
+    const response = await axiosInstance.get("/explore/trending/all", {
+      params,
+    });
     return response.data;
   },
 
@@ -28,9 +58,12 @@ export const exploreService = {
     page: number = 1,
     limit: number = 20,
   ): Promise<ProductsResponse> => {
-    const response = await axiosInstance.get(`/explore/categories/${category}`, {
-      params: { page, limit },
-    });
+    const response = await axiosInstance.get(
+      `/explore/categories/${category}`,
+      {
+        params: { page, limit },
+      },
+    );
     return response.data;
   },
 

@@ -8,33 +8,105 @@ import {
   Heart,
   TrendingUp,
   Star,
+  Camera,
+  Book,
+  Music,
+  Gamepad,
+  Laptop,
+  Watch,
+  Shirt,
+  Home,
+  Car,
+  Baby,
+  Phone,
+  PawPrint,
+  Trophy,
+  Cookie,
+  HeartPulse,
 } from "lucide-react";
 
-const categories = [
-  { name: "All", icon: Sparkles, count: 248 },
-  { name: "Electronics", icon: Zap, count: 64 },
-  { name: "Fashion", icon: Award, count: 52 },
-  { name: "Home & Living", icon: Package, count: 38 },
-  { name: "Health & Beauty", icon: Heart, count: 31 },
-  { name: "Gadgets", icon: TrendingUp, count: 27 },
-  { name: "Accessories", icon: Star, count: 36 },
-];
+// Icon mapping for different categories
+const categoryIcons: Record<string, any> = {
+  // Default categories
+  All: Sparkles,
+  Electronics: Zap,
+  Fashion: Award,
+  "Home & Living": Package,
+  "Health & Beauty": Heart,
+  Gadgets: TrendingUp,
+  Accessories: Star,
+
+  // Additional categories you might have
+  Cameras: Camera,
+  Books: Book,
+  Music: Music,
+  Gaming: Gamepad,
+  Laptops: Laptop,
+  Watches: Watch,
+  Clothing: Shirt,
+  Furniture: Home,
+  Automotive: Car,
+  Baby: Baby,
+  Pets: PawPrint,
+  Sports: Trophy,
+  Food: Cookie,
+  Beauty: HeartPulse,
+  Phones: Phone,
+};
+
+// Helper function to get icon for a category
+const getCategoryIcon = (categoryName: string) => {
+  return categoryIcons[categoryName] || Sparkles;
+};
+
+interface Category {
+  name: string;
+  count: number;
+}
 
 interface CategoriesProps {
   activeCategory: string;
   onCategoryChange: (category: string) => void;
+  categories: Category[];
+  isLoading: boolean;
 }
 
 export const Categories = ({
   activeCategory,
   onCategoryChange,
+  categories,
+  isLoading,
 }: CategoriesProps) => {
+  // Show loading skeletons while fetching
+  if (isLoading) {
+    return (
+      <section className="py-6 border-b border-[#e5e7eb] bg-white">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex gap-2 overflow-x-auto pb-2">
+            {[1, 2, 3, 4, 5, 6, 7].map((i) => (
+              <div
+                key={i}
+                className="h-10 w-20 bg-[#f3f4f6] rounded-full animate-pulse"
+              />
+            ))}
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  // Calculate total products from all categories
+  const totalProducts = categories.reduce((sum, cat) => sum + cat.count, 0);
+
+  // Create "All" category and combine with API categories
+  const allCategories = [{ name: "All", count: totalProducts }, ...categories];
+
   return (
     <section className="py-6 border-b border-[#e5e7eb] bg-white">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
-          {categories.map((cat) => {
-            const Icon = cat.icon;
+          {allCategories.map((cat) => {
+            const Icon = getCategoryIcon(cat.name);
             const isActive = activeCategory === cat.name;
 
             return (
