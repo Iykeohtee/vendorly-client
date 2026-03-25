@@ -1,6 +1,6 @@
 "use client";
 
-import { Card, CardContent, CardFooter } from "@/components/ui/Card";
+import { Card, CardContent } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/badge";
 import Button from "@/components/ui/Button";
 import { Heart, Eye, Star, ShoppingCart } from "lucide-react";
@@ -19,119 +19,132 @@ export const ProductCard = ({
   onToggleWishlist,
   formatPrice,
 }: ProductCardProps) => {
-  // Get first image or placeholder
   const productImage = product.images?.[0] || "📦";
 
-  // Check if product has hot tag
   const isHotDeal = product.tags?.some((tag) =>
     ["Hot Deal", "Hot", "Bestseller", "Trending"].includes(tag),
   );
 
-  // Check low stock
   const isLowStock = product.quantity > 0 && product.quantity < 5;
   const isOutOfStock = product.quantity === 0;
+  
+  const discountPercentage = product.discountPrice 
+    ? Math.round((1 - product.price / product.discountPrice) * 100)
+    : null;
 
   return (
-    <Card className="group overflow-hidden transition-all hover:shadow-lg hover:shadow-[#10b981]/5 hover:-translate-y-0.5 border border-[#e5e7eb]">
-      <div className="relative aspect-square bg-[#f9fafb] flex items-center justify-center">
+    <Card className="group relative overflow-hidden transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5 border border-[#e5e7eb] bg-white rounded-lg">
+      {/* Image Container - Reduced height */}
+      <div className="relative aspect-square bg-gradient-to-br from-[#f9fafb] to-[#f3f4f6] overflow-hidden">
         {productImage.startsWith("http") ? (
           <img
             src={productImage}
             alt={product.name}
-            className="w-full h-full object-cover"
+            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
           />
         ) : (
-          <span className="text-6xl">{productImage}</span>
+          <div className="w-full h-full flex items-center justify-center text-4xl opacity-50">
+            {productImage}
+          </div>
         )}
 
-        {isHotDeal && (
-          <Badge className="absolute top-3 left-3 bg-[#ef4444] text-white text-xs border-0">
-            Hot Deal
-          </Badge>
-        )}
+        {/* Badges - Smaller */}
+        <div className="absolute top-1.5 left-1.5 flex flex-col gap-0.5">
+          {isHotDeal && (
+            <Badge className="bg-gradient-to-r from-[#ef4444] to-[#dc2626] text-white text-[9px] border-0 px-1.5 py-0 font-medium shadow-sm">
+              🔥 Hot
+            </Badge>
+          )}
+          {isLowStock && !isHotDeal && (
+            <Badge className="bg-gradient-to-r from-[#f59e0b] to-[#d97706] text-white text-[9px] border-0 px-1.5 py-0 font-medium shadow-sm">
+              ⚡ Low
+            </Badge>
+          )}
+          {isOutOfStock && (
+            <Badge className="bg-[#6b7280] text-white text-[9px] border-0 px-1.5 py-0 font-medium shadow-sm">
+              Sold
+            </Badge>
+          )}
+        </div>
 
-        {isLowStock && !isHotDeal && (
-          <Badge className="absolute top-3 left-3 bg-[#f59e0b] text-white text-xs border-0">
-            Low Stock
-          </Badge>
-        )}
-
-        {isOutOfStock && (
-          <Badge className="absolute top-3 left-3 bg-[#6b7280] text-white text-xs border-0">
-            Out of Stock
-          </Badge>
-        )}
-
+        {/* Wishlist Button - Smaller */}
         <button
           onClick={() => onToggleWishlist(product.id)}
-          className="absolute top-3 right-3 h-8 w-8 rounded-full bg-white/80 backdrop-blur flex items-center justify-center transition-all hover:scale-110 hover:bg-white"
+          className="absolute top-1.5 right-1.5 h-6 w-6 rounded-full bg-white/90 backdrop-blur-sm flex items-center justify-center hover:bg-white transition-all duration-200 shadow-sm opacity-0 group-hover:opacity-100 translate-x-1 group-hover:translate-x-0"
         >
           <Heart
-            className={`h-4 w-4 ${
+            className={`h-3 w-3 transition-all ${
               isWishlisted
-                ? "fill-[#ef4444] text-[#ef4444]"
-                : "text-[#9ca3af] hover:text-[#ef4444]"
+                ? "fill-[#ef4444] text-[#ef4444] scale-110"
+                : "text-[#9ca3af] group-hover:text-[#ef4444]"
             }`}
           />
         </button>
 
-        {product.ordersCount && product.ordersCount > 0 ? (
-          <div className="absolute bottom-3 left-3 flex items-center gap-1 bg-white/80 backdrop-blur rounded-full px-2 py-1 text-xs">
-            <Eye className="h-3 w-3 text-[#6b7280]" />
-            <span className="font-medium text-[#374151]">
-              {product.ordersCount} sold
-            </span>
-          </div>
-        ) : (
-          <div className="absolute bottom-3 left-3 flex items-center gap-1 bg-white/80 backdrop-blur rounded-full px-2 py-1 text-xs">
-            <Eye className="h-3 w-3 text-[#6b7280]" />
-            <span className="font-medium text-[#374151]">0 sold</span>
-          </div>
-        )}
+        {/* Stats Badge - Smaller */}
+        <div className="absolute bottom-1.5 left-1.5 flex items-center gap-0.5 bg-black/50 backdrop-blur-sm rounded-full px-1.5 py-0.5">
+          <Eye className="h-2 w-2 text-white" />
+          <span className="text-[8px] font-medium text-white">
+            {product.ordersCount || 0}
+          </span>
+        </div>
+
+        {/* Quick View Overlay */}
+        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+          <button className="px-2 py-1 bg-white rounded-md text-[9px] font-medium text-[#111827] hover:bg-[#10b981] hover:text-white transition-all duration-200 transform scale-90 group-hover:scale-100 shadow-lg">
+            Quick View
+          </button>
+        </div>
       </div>
 
-      <CardContent className="p-4 space-y-2">
-        <p className="text-xs text-[#6b7280]">
-          {product.vendor?.storeName || "Unknown Store"}
+      {/* Content - Reduced padding and spacing */}
+      <CardContent className="p-2 space-y-1">
+        {/* Vendor Name */}
+        <p className="text-[9px] text-[#6b7280] truncate">
+          {product.vendor?.storeName || "Unknown"}
         </p>
-        <h3 className="font-semibold text-sm line-clamp-1 text-[#111827]">
+        
+        {/* Product Name */}
+        <h3 className="font-semibold text-[10px] leading-tight line-clamp-2 text-[#111827] group-hover:text-[#10b981] transition-colors min-h-[24px]">
           {product.name}
         </h3>
-        <div className="flex items-center gap-2">
-          <span className="text-lg font-bold text-[#10b981]">
+        
+        {/* Price */}
+        <div className="flex items-center gap-1 flex-wrap">
+          <span className="font-bold text-xs text-[#10b981]">
             {formatPrice(product.price)}
           </span>
           {product.discountPrice && (
             <>
-              <span className="text-xs text-[#9ca3af] line-through">
+              <span className="text-[8px] text-[#9ca3af] line-through">
                 {formatPrice(product.discountPrice)}
               </span>
-              <Badge
-                variant="secondary"
-                className="text-xs bg-[#f3f4f6] text-[#10b981] border-0"
-              >
-                -{Math.round((1 - product.price / product.discountPrice) * 100)}
-                %
+              <Badge className="bg-[#fef3c7] text-[#d97706] text-[8px] border-0 px-1 py-0">
+                -{discountPercentage}%
               </Badge>
             </>
           )}
         </div>
-        <div className="flex items-center gap-1 text-xs">
-          <Star className="h-3 w-3 fill-[#f59e0b] text-[#f59e0b]" />
-          <span className="font-medium text-[#111827]">4.5</span>
-          <span className="text-[#6b7280]">(Coming soon)</span>
+        
+        {/* Rating */}
+        <div className="flex items-center gap-1">
+          <div className="flex items-center gap-0.5">
+            <Star className="h-2.5 w-2.5 fill-[#f59e0b] text-[#f59e0b]" />
+            <span className="text-[9px] font-medium text-[#111827]">4.5</span>
+          </div>
+          <span className="text-[8px] text-[#9ca3af]">(128)</span>
         </div>
-      </CardContent>
-      <CardFooter className="p-4 pt-0">
+
+        {/* Order Button - Smaller */}
         <Button
-          className="w-full bg-[#10b981] hover:bg-[#059669] text-white font-medium"
+          className="w-full mt-1 bg-[#10b981] hover:bg-[#059669] text-white font-medium text-[10px] h-7 transition-all duration-200 group/btn rounded-md"
           size="sm"
           disabled={isOutOfStock}
         >
-          <ShoppingCart className="mr-2 h-4 w-4" />
-          {isOutOfStock ? "Out of Stock" : "Add to Cart"}
+          <ShoppingCart className="mr-1 h-2.5 w-2.5 group-hover/btn:scale-110 transition-transform" />
+          {isOutOfStock ? "Out of Stock" : "Order"}
         </Button>
-      </CardFooter>
+      </CardContent>
     </Card>
   );
 };

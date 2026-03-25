@@ -11,6 +11,7 @@ export interface User {
     storeSlug: string;
     storeName: string;
   },
+  profileImage?: string;
   verified?: boolean;
   createdAt: string;
   updatedAt: string;

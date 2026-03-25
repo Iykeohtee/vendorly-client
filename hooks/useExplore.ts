@@ -69,9 +69,14 @@ export const useExplore = () => {
     queryFn: async () => {
       dispatch(setLoadingTrending(true));
       try {
-        const { category } = activeCategory;
+        const { category, search, page, limit } = activeCategory;
 
-        const response = await exploreService.getTrendingToday(10, category);
+        let response;
+        if (search) {
+          response = await exploreService.searchProducts(search, page, limit);
+        } else {
+          response = await exploreService.getTrendingToday(10, category);
+        }
         dispatch(setTrendingToday(response.products));
         return response.products;
       } catch (error: any) {
@@ -94,8 +99,14 @@ export const useExplore = () => {
     queryFn: async () => {
       dispatch(setLoadingTrending(true));
       try {
-        const { category } = activeCategory;
-        const response = await exploreService.getTrendingThisWeek(20, category);
+        const { category, search, page, limit } = activeCategory;
+
+        let response;
+        if (search) {
+          response = await exploreService.searchProducts(search, page, limit);
+        } else {
+          response = await exploreService.getTrendingThisWeek(20, category);
+        }
         dispatch(setTrendingWeek(response.products));
         return response.products || response;
       } catch (error: any) {
