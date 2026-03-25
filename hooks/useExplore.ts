@@ -17,6 +17,9 @@ import {
   setLoadingTrending,
   setTrendingToday,
   setTrendingWeek,
+  setLoadingTopVendors,
+  setTopVendorsError,
+  setTopVendors,
 } from "@/redux/slices/exploreSlice";
 import { ExploreFilters } from "@/types/explore";
 
@@ -24,6 +27,7 @@ export const useExplore = () => {
   const dispatch = useDispatch<AppDispatch>();
   const queryClient = useQueryClient();
   const explore = useSelector((state: RootState) => state.explore);
+  const activeCategory = explore.filters;
 
   // Query for products
   const productsQuery = useQuery({
@@ -60,14 +64,16 @@ export const useExplore = () => {
   });
 
   // Query for trending today
-  const trendingTodayQery = useQuery({
-    queryKey: ["explore", "trending", "today"],
+  const trendingTodayQuery = useQuery({
+    queryKey: ["explore", "products", "trending", "today", activeCategory],
     queryFn: async () => {
       dispatch(setLoadingTrending(true));
       try {
-        const response = await exploreService.getTrendingToday(10);
-        dispatch(setTrendingToday(response));
-        return response;
+        const { category } = activeCategory;
+
+        const response = await exploreService.getTrendingToday(10, category);
+        dispatch(setTrendingToday(response.products));
+        return response.products;
       } catch (error: any) {
         dispatch(
           setError(
@@ -79,17 +85,19 @@ export const useExplore = () => {
         dispatch(setLoadingTrending(false));
       }
     },
+    enabled: true,
   });
 
   // Query for trending this week
   const trendingWeekQuery = useQuery({
-    queryKey: ["explore", "trending", "week"],
+    queryKey: ["explore", "products", "trending", "week", activeCategory],
     queryFn: async () => {
       dispatch(setLoadingTrending(true));
       try {
-        const response = await exploreService.getTrendingThisWeek(20);
-        dispatch(setTrendingWeek(response));
-        return response;
+        const { category } = activeCategory;
+        const response = await exploreService.getTrendingThisWeek(20, category);
+        dispatch(setTrendingWeek(response.products));
+        return response.products || response;
       } catch (error: any) {
         dispatch(
           setError(
@@ -101,6 +109,29 @@ export const useExplore = () => {
         dispatch(setLoadingTrending(false));
       }
     },
+  });
+
+  // Query for top vendors
+  const topVendorsQuery = useQuery({
+    queryKey: ["top-vendors"],
+    queryFn: async () => {
+      dispatch(setLoadingTopVendors(true));
+      try {
+        const response = await exploreService.getTopVendors(10, "revenue");
+        dispatch(setTopVendors(response.vendors));
+        return response;
+      } catch (error: any) {
+        dispatch(
+          setTopVendorsError(
+            error.response?.data?.message || "Failed to fetch top vendors",
+          ),
+        );
+        throw error;
+      } finally {
+        dispatch(setLoadingTopVendors(false));
+      }
+    },
+    staleTime: 5 * 60 * 1000, // 5 minutes
   });
 
   // Query for categories
@@ -188,6 +219,9 @@ export const useExplore = () => {
     trendingToday: explore.trendingToday,
     trendingWeek: explore.trendingWeek,
     isLoadingTrending: explore.isLoadingTrending,
+    topVendors: explore.topVendors,
+    isLoadingTopVendors: explore.topVendorsLoading,
+    topVendorsError: explore.topVendorsError,
 
     // Data
     products: explore.products,
@@ -209,8 +243,9 @@ export const useExplore = () => {
     productsQuery,
     categoriesQuery,
     useProductDetails,
-    trendingTodayQery,
+    trendingTodayQuery,
     trendingWeekQuery,
+    topVendorsQuery,
 
     // Actions
     updateFilters,

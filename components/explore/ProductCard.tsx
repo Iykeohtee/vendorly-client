@@ -14,7 +14,7 @@ interface ProductCardProps {
 }
 
 export const ProductCard = ({
-  product,
+  product,  
   isWishlisted,
   onToggleWishlist,
   formatPrice,
@@ -75,12 +75,17 @@ export const ProductCard = ({
           />
         </button>
 
-        {product.ordersCount && product.ordersCount > 0 && (
+        {product.ordersCount && product.ordersCount > 0 ? (
           <div className="absolute bottom-3 left-3 flex items-center gap-1 bg-white/80 backdrop-blur rounded-full px-2 py-1 text-xs">
             <Eye className="h-3 w-3 text-[#6b7280]" />
             <span className="font-medium text-[#374151]">
               {product.ordersCount} sold
             </span>
+          </div>
+        ) : (
+          <div className="absolute bottom-3 left-3 flex items-center gap-1 bg-white/80 backdrop-blur rounded-full px-2 py-1 text-xs">
+            <Eye className="h-3 w-3 text-[#6b7280]" />
+            <span className="font-medium text-[#374151]">0 sold</span>
           </div>
         )}
       </div>

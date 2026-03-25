@@ -20,7 +20,9 @@ export const exploreService = {
     if (limit) params.limit = limit;
     if (category) params.category = category;
 
-    const response = await axiosInstance.get("/explore/trending/today", {params});
+    const response = await axiosInstance.get("/explore/trending/today", {
+      params,
+    });
     return response.data;
   },
 
@@ -32,7 +34,9 @@ export const exploreService = {
     if (limit) params.limit = limit;
     if (category) params.category = category;
 
-    const response = await axiosInstance.get("/explore/trending/week", {params});
+    const response = await axiosInstance.get("/explore/trending/week", {
+      params,
+    });
     return response.data;
   },
 
@@ -43,6 +47,19 @@ export const exploreService = {
     const response = await axiosInstance.get("/explore/trending/all", {
       params,
     });
+    return response.data;
+  },
+
+  // Get top vendors
+  getTopVendors: async (
+    limit?: number,
+    sortBy?: "revenue" | "orders" | "products" | "trending",
+  ): Promise<any> => {
+    const params: any = {};
+    if (limit) params.limit = limit;
+    if (sortBy) params.sortBy = sortBy;
+
+    const response = await axiosInstance.get("/explore/top-vendors", { params });
     return response.data;
   },
 

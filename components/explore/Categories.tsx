@@ -31,8 +31,6 @@ const categoryIcons: Record<string, any> = {
   All: Sparkles,
   Electronics: Zap,
   Fashion: Award,
-  "Home & Living": Package,
-  "Health & Beauty": Heart,
   Gadgets: TrendingUp,
   Accessories: Star,
 

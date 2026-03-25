@@ -15,7 +15,7 @@ export interface Product {
   // Aggregated stats
   ordersCount?: number;
   products?: string[];
-  
+
   vendor: {
     id: string;
     storeName: string;
@@ -26,6 +26,33 @@ export interface Product {
   };
 }
 
+export interface TopVendor {
+  id: string;
+  storeName: string;
+  storeSlug: string;
+  logo?: string;
+  location?: string;
+  joinDate: string;
+
+  // Stats
+  totalProducts: number;
+  totalOrders: number;
+  totalItemsSold: number;
+  totalRevenue: number;
+  averageRating?: number;
+
+  // Verification
+  isVerified: boolean;
+
+  // Badges
+  isTopRated?: boolean;
+  isBestSeller?: boolean;
+
+  // Additional
+  ownerName?: string;
+  trendingScore?: number;
+}
+
 export interface ProductsResponse {
   products: Product[];
   pagination: {
@@ -34,7 +61,7 @@ export interface ProductsResponse {
     total: number;
     pages: number;
   };
-  data: any
+  data: any;
 }
 
 export interface Category {
@@ -61,7 +88,11 @@ export interface ExploreState {
     pages: number;
   } | null;
   trendingToday: Product[];
-  trendingWeek: Product[]
+  trendingWeek: Product[];
+  topVendors: TopVendor[];
+
+  topVendorsLoading: boolean; 
+  topVendorsError: string | null;
 
   // UI States
   isLoadingProducts: boolean;

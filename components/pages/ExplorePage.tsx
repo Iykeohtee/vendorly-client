@@ -38,6 +38,7 @@ export default function Explore() {
 
   // Handle category change from Categories component
   const handleCategoryChange = (category: string) => {
+    console.log("Category clicked:", category);
     // If category is "All", pass undefined to clear the filter
     updateFilters({
       category: category === "All" ? undefined : category,
@@ -74,9 +75,10 @@ export default function Explore() {
   }, [products]);
 
   // Refresh products when filters change
-  useEffect(() => {
+  useEffect(() => { 
     refreshProducts();
   }, [filters]);
+
 
   return (
     <div className="min-h-screen bg-[#f9fafb]">

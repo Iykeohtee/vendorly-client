@@ -6,6 +6,7 @@ import {
   ExploreState,
   ExploreFilters,
 } from "@/types/explore";
+import { TopVendor } from "@/types/explore";
 
 const initialState: ExploreState = {
   // Data
@@ -16,7 +17,9 @@ const initialState: ExploreState = {
 
   trendingToday: [],
   trendingWeek: [],
-
+  topVendors: [],
+  topVendorsLoading: false,
+  topVendorsError: null,
   // UI States
   isLoadingProducts: false,
   isLoadingCategories: false,
@@ -68,10 +71,20 @@ const exploreSlice = createSlice({
     },
 
     setTrendingToday: (state, action: PayloadAction<any>) => {
-      state.trendingToday = action.payload.products;
+      state.trendingToday = action.payload;
     },
     setTrendingWeek: (state, action: PayloadAction<any>) => {
-      state.trendingWeek = action.payload.products;
+      state.trendingWeek = action.payload;
+    },
+
+    setLoadingTopVendors: (state, action: PayloadAction<boolean>) => {
+      state.topVendorsLoading = action.payload;
+    },
+    setTopVendors: (state, action: PayloadAction<TopVendor[]>) => {
+      state.topVendors = action.payload;
+    },
+    setTopVendorsError: (state, action: PayloadAction<string | null>) => {
+      state.topVendorsError = action.payload;
     },
 
     // Filters
@@ -107,12 +120,15 @@ export const {
   setLoadingCategories,
   setLoadingProduct,
   setLoadingTrending,
+  setLoadingTopVendors,
   setError,
   setProducts,
   setCategories,
   setSelectedProduct,
   setTrendingToday,
   setTrendingWeek,
+  setTopVendors,
+  setTopVendorsError,
   setFilters,
   setPage,
   resetFilters,
