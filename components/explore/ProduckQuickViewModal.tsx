@@ -42,17 +42,15 @@ export const ProductQuickViewModal = ({
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isImageLoading, setIsImageLoading] = useState(true);
 
-  // Get all valid images
-  const images = product?.images?.filter(img => img?.startsWith("http")) || [];
+  const images =
+    product?.images?.filter((img) => img?.startsWith("http")) || [];
   const hasMultipleImages = images.length > 1;
 
-  // Reset image index when product changes
   useEffect(() => {
     setCurrentImageIndex(0);
     setIsImageLoading(true);
   }, [product]);
 
-  // Close modal on escape key press
   useEffect(() => {
     const handleEsc = (e: KeyboardEvent) => {
       if (e.key === "Escape" && isOpen) {
@@ -63,7 +61,6 @@ export const ProductQuickViewModal = ({
     return () => window.removeEventListener("keydown", handleEsc);
   }, [isOpen, onClose]);
 
-  // Prevent body scroll when modal is open
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = "hidden";
@@ -89,35 +86,37 @@ export const ProductQuickViewModal = ({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-black/70 backdrop-blur-md animate-in fade-in duration-200"
+      className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 md:p-6 bg-black/70 backdrop-blur-md"
       onClick={onClose}
     >
       <div
-        className="relative w-full max-w-5xl bg-white rounded-2xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200 max-h-[95vh] sm:max-h-[90vh] flex flex-col"
+        className="relative w-full max-w-5xl bg-white rounded-2xl shadow-2xl overflow-hidden max-h-[95vh] md:max-h-[90vh] flex flex-col md:flex-row"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Close Button */}
         <button
           onClick={onClose}
-          className="absolute top-2 right-2 sm:top-4 sm:right-4 z-20 p-1.5 sm:p-2 bg-white/95 hover:bg-white rounded-full shadow-lg transition-all hover:scale-110 group"
+          className="absolute top-3 right-3 z-20 p-1.5 md:p-2 bg-white/95 hover:bg-white rounded-full shadow-lg transition-all hover:scale-110 group"
         >
-          <X className="h-4 w-4 sm:h-5 sm:w-5 text-[#6b7280] group-hover:text-[#111827]" />
+          <X className="h-4 w-4 md:h-5 md:w-5 text-[#6b7280] group-hover:text-[#111827]" />
         </button>
 
-        {/* ESC Hint - Hide on mobile */}
-        <div className="hidden sm:block absolute bottom-4 left-1/2 -translate-x-1/2 z-20 bg-black/60 backdrop-blur-sm rounded-full px-3 py-1 pointer-events-none">
-          <p className="text-[10px] text-white/80 flex items-center gap-1">
-            <span className="bg-white/20 px-1 rounded text-[9px]">ESC</span>
+        {/* ESC Hint */}
+        <div className="absolute bottom-3 left-1/2 -translate-x-1/2 z-20 bg-black/60 backdrop-blur-sm rounded-full px-2 md:px-3 py-0.5 md:py-1 pointer-events-none">
+          <p className="text-[8px] md:text-[10px] text-white/80 flex items-center gap-1">
+            <span className="bg-white/20 px-1 rounded text-[8px] md:text-[9px]">
+              ESC
+            </span>
             <span>to exit</span>
           </p>
         </div>
 
         {isLoading ? (
-          <div className="flex items-center justify-center h-[500px] sm:h-[600px]">
+          <div className="flex items-center justify-center h-[400px] md:h-[500px] w-full">
             <div className="text-center">
               <div className="relative">
                 <div className="absolute inset-0 bg-[#10b981]/20 rounded-full blur-xl animate-pulse" />
-                <RefreshCw className="h-10 w-10 sm:h-12 sm:w-12 text-[#10b981] animate-spin mx-auto mb-4 relative" />
+                <RefreshCw className="h-10 w-10 md:h-12 md:w-12 text-[#10b981] animate-spin mx-auto mb-4 relative" />
               </div>
               <p className="text-sm text-[#6b7280] font-medium">
                 Loading product details...
@@ -126,27 +125,30 @@ export const ProductQuickViewModal = ({
           </div>
         ) : product ? (
           <>
-            {/* Image Gallery Section - Fixed height on mobile */}
-            <div className="bg-gradient-to-br from-[#f9fafb] to-[#f3f4f6] p-3 sm:p-6 lg:p-8">
-              <div className="relative flex items-center justify-center min-h-[250px] sm:min-h-[300px] lg:min-h-[400px]">
+            {/* Image Section - Reduced height on mobile/tablet */}
+            <div className="bg-gradient-to-br from-[#f9fafb] to-[#f3f4f6] p-4 md:p-6 flex-shrink-0 md:w-2/5 lg:w-2/5">
+              {/* Main Image - Smaller on mobile/tablet */}
+              <div className="relative flex items-center justify-center h-48 sm:h-56 md:h-80 lg:h-96">
                 {images.length > 0 ? (
                   <>
                     {isImageLoading && (
                       <div className="absolute inset-0 flex items-center justify-center">
-                        <RefreshCw className="h-6 w-6 sm:h-8 sm:w-8 text-[#10b981] animate-spin" />
+                        <RefreshCw className="h-6 w-6 md:h-8 md:w-8 text-[#10b981] animate-spin" />
                       </div>
                     )}
                     <img
                       src={images[currentImageIndex]}
                       alt={`${product.name} - Image ${currentImageIndex + 1}`}
-                      className={`max-w-full max-h-[200px] sm:max-h-[280px] lg:max-h-[350px] object-contain rounded-lg transition-opacity duration-300 ${
+                      className={`max-w-full max-h-full object-contain rounded-lg transition-opacity duration-300 ${
                         isImageLoading ? "opacity-0" : "opacity-100"
                       }`}
                       onLoad={() => setIsImageLoading(false)}
                     />
                   </>
                 ) : (
-                  <span className="text-6xl sm:text-8xl opacity-30">📦</span>
+                  <span className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl opacity-30">
+                    📦
+                  </span>
                 )}
 
                 {/* Navigation Arrows */}
@@ -154,23 +156,23 @@ export const ProductQuickViewModal = ({
                   <>
                     <button
                       onClick={previousImage}
-                      className="absolute left-1 sm:left-2 top-1/2 -translate-y-1/2 p-1.5 sm:p-2 bg-white/90 hover:bg-white rounded-full shadow-lg transition-all hover:scale-110"
+                      className="absolute left-1 md:left-2 top-1/2 -translate-y-1/2 p-1.5 md:p-2 bg-white/90 hover:bg-white rounded-full shadow-lg transition-all hover:scale-110"
                     >
-                      <ChevronLeft className="h-4 w-4 sm:h-5 sm:w-5 text-[#374151]" />
+                      <ChevronLeft className="h-4 w-4 md:h-5 md:w-5 text-[#374151]" />
                     </button>
                     <button
                       onClick={nextImage}
-                      className="absolute right-1 sm:right-2 top-1/2 -translate-y-1/2 p-1.5 sm:p-2 bg-white/90 hover:bg-white rounded-full shadow-lg transition-all hover:scale-110"
+                      className="absolute right-1 md:right-2 top-1/2 -translate-y-1/2 p-1.5 md:p-2 bg-white/90 hover:bg-white rounded-full shadow-lg transition-all hover:scale-110"
                     >
-                      <ChevronRight className="h-4 w-4 sm:h-5 sm:w-5 text-[#374151]" />
+                      <ChevronRight className="h-4 w-4 md:h-5 md:w-5 text-[#374151]" />
                     </button>
                   </>
                 )}
               </div>
 
-              {/* Thumbnails */}
+              {/* Thumbnails - Smaller on mobile/tablet */}
               {hasMultipleImages && (
-                <div className="flex gap-1 sm:gap-2 mt-3 sm:mt-4 overflow-x-auto pb-2 justify-center">
+                <div className="flex gap-1 md:gap-2 mt-2 md:mt-4 overflow-x-auto pb-2 justify-center">
                   {images.map((img, idx) => (
                     <button
                       key={idx}
@@ -178,7 +180,7 @@ export const ProductQuickViewModal = ({
                         setCurrentImageIndex(idx);
                         setIsImageLoading(true);
                       }}
-                      className={`relative flex-shrink-0 w-12 h-12 sm:w-16 sm:h-16 rounded-lg overflow-hidden border-2 transition-all ${
+                      className={`relative flex-shrink-0 w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 rounded-lg overflow-hidden border-2 transition-all ${
                         currentImageIndex === idx
                           ? "border-[#10b981] shadow-md scale-105"
                           : "border-[#e5e7eb] hover:border-[#10b981]/50"
@@ -195,119 +197,127 @@ export const ProductQuickViewModal = ({
               )}
             </div>
 
-            {/* Details Section - Scrollable */}
-            <div className="p-4 sm:p-6 lg:p-8 overflow-y-auto flex-1">
+            {/* Details Section - Takes more space on mobile/tablet */}
+            <div className="p-4 md:p-6 overflow-y-auto flex-1 md:w-3/5 lg:w-3/5">
               {/* Vendor Info */}
-              <div className="flex items-center gap-2 sm:gap-3 mb-3 sm:mb-4">
-                <div className="h-8 w-8 sm:h-10 sm:w-10 rounded-full bg-gradient-to-br from-[#10b981]/20 to-[#10b981]/10 flex items-center justify-center flex-shrink-0">
-                  <Store className="h-4 w-4 sm:h-5 sm:w-5 text-[#10b981]" />
+              <div className="flex items-center gap-2 md:gap-3 mb-2 md:mb-4">
+                <div className="h-7 w-7 sm:h-8 sm:w-8 md:h-10 md:w-10 rounded-full bg-gradient-to-br from-[#10b981]/20 to-[#10b981]/10 flex items-center justify-center flex-shrink-0">
+                  <Store className="h-3.5 w-3.5 sm:h-4 sm:w-4 md:h-5 md:w-5 text-[#10b981]" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-xs sm:text-sm font-semibold text-[#111827] truncate">
+                  <p className="text-xs md:text-sm font-semibold text-[#111827] truncate">
                     {product.vendor?.storeName || "Unknown Store"}
                   </p>
                   <div className="flex items-center gap-1 mt-0.5 flex-wrap">
                     <div className="flex items-center">
-                      <Star className="h-2.5 w-2.5 sm:h-3 sm:w-3 fill-[#f59e0b] text-[#f59e0b]" />
-                      <span className="text-[10px] sm:text-xs font-medium text-[#111827] ml-0.5">
+                      <Star className="h-2.5 w-2.5 md:h-3 md:w-3 fill-[#f59e0b] text-[#f59e0b]" />
+                      <span className="text-[10px] md:text-xs font-medium text-[#111827] ml-0.5">
                         {product.rating || "4.8"}
                       </span>
                     </div>
-                    <span className="text-[9px] sm:text-[11px] text-[#9ca3af]">(245 reviews)</span>
-                    <span className="w-0.5 h-0.5 rounded-full bg-[#d1d5db] mx-0.5 sm:mx-1" />
+                    <span className="text-[8px] sm:text-[9px] md:text-[11px] text-[#9ca3af]">
+                      (245 reviews)
+                    </span>
+                    <span className="w-0.5 h-0.5 rounded-full bg-[#d1d5db] mx-0.5 md:mx-1" />
                     <div className="flex items-center gap-0.5">
-                      <CheckCircle className="h-2.5 w-2.5 sm:h-3 sm:w-3 text-[#10b981]" />
-                      <span className="text-[9px] sm:text-[11px] text-[#10b981]">Verified</span>
+                      <CheckCircle className="h-2.5 w-2.5 md:h-3 md:w-3 text-[#10b981]" />
+                      <span className="text-[8px] sm:text-[9px] md:text-[11px] text-[#10b981]">
+                        Verified
+                      </span>
                     </div>
                   </div>
                 </div>
               </div>
 
               {/* Product Name */}
-              <h2 className="text-base sm:text-xl lg:text-2xl font-bold text-[#111827] mb-2 sm:mb-3 leading-tight">
+              <h2 className="text-sm sm:text-base md:text-xl lg:text-2xl font-bold text-[#111827] mb-1.5 md:mb-3 leading-tight">
                 {product.name}
               </h2>
 
               {/* Price */}
-              <div className="flex items-center gap-2 sm:gap-3 mb-3 sm:mb-4 flex-wrap">
-                <span className="text-xl sm:text-2xl lg:text-3xl font-bold text-[#10b981]">
+              <div className="flex items-center gap-2 md:gap-3 mb-2 md:mb-4 flex-wrap">
+                <span className="text-base sm:text-lg md:text-2xl lg:text-3xl font-bold text-[#10b981]">
                   {formatPrice(product.price)}
                 </span>
                 {product.discountPrice && (
                   <>
-                    <span className="text-xs sm:text-sm text-[#9ca3af] line-through">
+                    <span className="text-[10px] sm:text-xs md:text-sm text-[#9ca3af] line-through">
                       {formatPrice(product.discountPrice)}
                     </span>
-                    <Badge className="bg-gradient-to-r from-[#fef3c7] to-[#fed7aa] text-[#d97706] border-0 px-1.5 sm:px-2 py-0.5 text-[10px] sm:text-xs">
-                      -{Math.round((1 - product.price / product.discountPrice) * 100)}%
+                    <Badge className="bg-gradient-to-r from-[#fef3c7] to-[#fed7aa] text-[#d97706] border-0 px-1 sm:px-1.5 md:px-2 py-0.5 text-[8px] sm:text-[9px] md:text-xs">
+                      -
+                      {Math.round(
+                        (1 - product.price / product.discountPrice) * 100,
+                      )}
+                      %
                     </Badge>
                   </>
                 )}
               </div>
 
               {/* Description */}
-              <div className="mb-4 sm:mb-5">
-                <h3 className="text-[10px] sm:text-xs font-semibold text-[#6b7280] uppercase tracking-wide mb-1 sm:mb-2">
+              <div className="mb-2 md:mb-5">
+                <h3 className="text-[9px] sm:text-[10px] md:text-xs font-semibold text-[#6b7280] uppercase tracking-wide mb-1 md:mb-2">
                   Description
                 </h3>
-                <p className="text-xs sm:text-sm text-[#4b5563] leading-relaxed">
+                <p className="text-[10px] sm:text-xs md:text-sm text-[#4b5563] leading-relaxed line-clamp-3 sm:line-clamp-none">
                   {product.description ||
                     "No description available for this product. Contact the vendor for more details."}
                 </p>
               </div>
 
               {/* Product Features */}
-              <div className="grid grid-cols-1 xs:grid-cols-2 gap-1.5 sm:gap-2 mb-4 sm:mb-5">
-                <div className="flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm text-[#6b7280] bg-[#f9fafb] rounded-lg px-2 sm:px-3 py-1.5 sm:py-2">
-                  <Shield className="h-3 w-3 sm:h-4 sm:w-4 text-[#10b981] flex-shrink-0" />
-                  <span className="truncate">100% Authentic</span>
+              <div className="grid grid-cols-2 gap-1 md:gap-2 mb-2 md:mb-5">
+                <div className="flex items-center gap-1 md:gap-2 text-[9px] sm:text-[10px] md:text-sm text-[#6b7280] bg-[#f9fafb] rounded-lg px-1.5 sm:px-2 md:px-3 py-1 sm:py-1.5 md:py-2">
+                  <Shield className="h-2.5 w-2.5 sm:h-3 sm:w-3 md:h-4 md:w-4 text-[#10b981] flex-shrink-0" />
+                  <span className="truncate">Authentic</span>
                 </div>
-                <div className="flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm text-[#6b7280] bg-[#f9fafb] rounded-lg px-2 sm:px-3 py-1.5 sm:py-2">
-                  <Truck className="h-3 w-3 sm:h-4 sm:w-4 text-[#10b981] flex-shrink-0" />
+                <div className="flex items-center gap-1 md:gap-2 text-[9px] sm:text-[10px] md:text-sm text-[#6b7280] bg-[#f9fafb] rounded-lg px-1.5 sm:px-2 md:px-3 py-1 sm:py-1.5 md:py-2">
+                  <Truck className="h-2.5 w-2.5 sm:h-3 sm:w-3 md:h-4 md:w-4 text-[#10b981] flex-shrink-0" />
                   <span className="truncate">Fast Delivery</span>
                 </div>
-                <div className="flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm text-[#6b7280] bg-[#f9fafb] rounded-lg px-2 sm:px-3 py-1.5 sm:py-2">
-                  <RefreshCw className="h-3 w-3 sm:h-4 sm:w-4 text-[#10b981] flex-shrink-0" />
-                  <span className="truncate">7-Day Returns</span>
+                <div className="flex items-center gap-1 md:gap-2 text-[9px] sm:text-[10px] md:text-sm text-[#6b7280] bg-[#f9fafb] rounded-lg px-1.5 sm:px-2 md:px-3 py-1 sm:py-1.5 md:py-2">
+                  <RefreshCw className="h-2.5 w-2.5 sm:h-3 sm:w-3 md:h-4 md:w-4 text-[#10b981] flex-shrink-0" />
+                  <span className="truncate">No what I ordered vs what I got</span>
                 </div>
-                <div className="flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm text-[#6b7280] bg-[#f9fafb] rounded-lg px-2 sm:px-3 py-1.5 sm:py-2">
-                  <Zap className="h-3 w-3 sm:h-4 sm:w-4 text-[#10b981] flex-shrink-0" />
-                  <span className="truncate">Instant Support</span>
+                <div className="flex items-center gap-1 md:gap-2 text-[9px] sm:text-[10px] md:text-sm text-[#6b7280] bg-[#f9fafb] rounded-lg px-1.5 sm:px-2 md:px-3 py-1 sm:py-1.5 md:py-2">
+                  <Zap className="h-2.5 w-2.5 sm:h-3 sm:w-3 md:h-4 md:w-4 text-[#10b981] flex-shrink-0" />
+                  <span className="truncate">Support</span>
                 </div>
               </div>
 
               {/* Stock Status */}
               {product.quantity > 0 && product.quantity < 5 && (
-                <div className="mb-4 sm:mb-5 p-2 sm:p-3 bg-gradient-to-r from-[#fef3c7] to-[#fed7aa] rounded-xl border border-[#fed7aa]">
-                  <p className="text-[10px] sm:text-xs font-semibold text-[#d97706] flex items-center gap-1.5 sm:gap-2">
-                    <Clock className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
+                <div className="mb-2 md:mb-5 p-1.5 sm:p-2 md:p-3 bg-gradient-to-r from-[#fef3c7] to-[#fed7aa] rounded-xl border border-[#fed7aa]">
+                  <p className="text-[9px] sm:text-[10px] md:text-xs font-semibold text-[#d97706] flex items-center gap-1 md:gap-2">
+                    <Clock className="h-2.5 w-2.5 sm:h-3 sm:w-3 md:h-3.5 md:w-3.5" />
                     ⚡ Only {product.quantity} items left! Order now.
                   </p>
                 </div>
               )}
 
               {product.quantity === 0 && (
-                <div className="mb-4 sm:mb-5 p-2 sm:p-3 bg-[#f3f4f6] rounded-xl">
-                  <p className="text-[10px] sm:text-xs font-medium text-[#6b7280] text-center">
+                <div className="mb-2 md:mb-5 p-1.5 sm:p-2 md:p-3 bg-[#f3f4f6] rounded-xl">
+                  <p className="text-[9px] sm:text-[10px] md:text-xs font-medium text-[#6b7280] text-center">
                     Out of Stock - Check back soon
                   </p>
                 </div>
               )}
 
               {/* Action Buttons */}
-              <div className="flex flex-col xs:flex-row gap-2 sm:gap-3">
+              <div className="flex gap-2 md:gap-3">
                 <Button
-                  className="flex-1 bg-gradient-to-r from-[#10b981] to-[#059669] hover:from-[#059669] hover:to-[#047857] text-white font-semibold py-2 sm:py-2.5 text-xs sm:text-sm shadow-lg hover:shadow-xl transition-all duration-300"
+                  className="flex-1 bg-gradient-to-r from-[#10b981] to-[#059669] hover:from-[#059669] hover:to-[#047857] text-white font-semibold py-1.5 sm:py-2 md:py-2.5 text-[10px] sm:text-xs md:text-sm shadow-lg hover:shadow-xl transition-all duration-300"
                   disabled={product.quantity === 0}
                 >
-                  <ShoppingCart className="mr-1.5 sm:mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                  <ShoppingCart className="mr-1 md:mr-1.5 h-3 w-3 sm:h-3.5 sm:w-3.5 md:h-4 md:w-4" />
                   {product.quantity === 0
                     ? "Out of Stock"
                     : "Order on WhatsApp"}
                 </Button>
                 <Button
                   variant="outline"
-                  className={`px-4 sm:px-6 border-2 transition-all duration-300 py-2 sm:py-2.5 text-xs sm:text-sm ${
+                  className={`px-3 sm:px-4 md:px-6 border-2 transition-all duration-300 py-1.5 sm:py-2 md:py-2.5 text-[10px] sm:text-xs md:text-sm ${
                     isWishlisted
                       ? "border-[#ef4444] bg-[#ef4444]/10 text-[#ef4444] hover:bg-[#ef4444] hover:text-white"
                       : "border-[#e5e7eb] hover:border-[#ef4444] hover:text-[#ef4444]"
@@ -315,29 +325,29 @@ export const ProductQuickViewModal = ({
                   onClick={() => onToggleWishlist(product.id)}
                 >
                   <Heart
-                    className={`h-3.5 w-3.5 sm:h-4 sm:w-4 transition-all ${
+                    className={`h-3 w-3 sm:h-3.5 sm:w-3.5 md:h-4 md:w-4 transition-all ${
                       isWishlisted ? "fill-[#ef4444]" : ""
                     }`}
                   />
-                  <span className="ml-1.5 sm:ml-2 hidden xs:inline">
+                  <span className="ml-1 md:ml-2 hidden sm:inline">
                     {isWishlisted ? "Saved" : "Save"}
                   </span>
                 </Button>
               </div>
 
               {/* Additional Info */}
-              <div className="mt-4 sm:mt-6 pt-3 sm:pt-4 border-t border-[#e5e7eb]">
-                <p className="text-[10px] sm:text-xs text-[#9ca3af] text-center">
-                  Need help? Contact vendor via WhatsApp
+              <div className="mt-3 md:mt-6 pt-2 md:pt-4 border-t border-[#e5e7eb]">
+                <p className="text-[8px] sm:text-[9px] md:text-xs text-[#9ca3af] text-center">
+                  Need help? Contact vendor directly via WhatsApp
                 </p>
               </div>
             </div>
           </>
         ) : (
-          <div className="flex items-center justify-center h-[400px] sm:h-[500px]">
+          <div className="flex items-center justify-center h-[400px] md:h-[500px] w-full">
             <div className="text-center px-4">
-              <div className="h-12 w-12 sm:h-16 sm:w-16 rounded-full bg-[#fef2f2] flex items-center justify-center mx-auto mb-3 sm:mb-4">
-                <X className="h-6 w-6 sm:h-8 sm:w-8 text-[#ef4444]" />
+              <div className="h-12 w-12 md:h-16 md:w-16 rounded-full bg-[#fef2f2] flex items-center justify-center mx-auto mb-3 md:mb-4">
+                <X className="h-6 w-6 md:h-8 md:w-8 text-[#ef4444]" />
               </div>
               <p className="text-sm text-[#6b7280] font-medium">
                 Failed to load product details
