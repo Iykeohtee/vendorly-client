@@ -10,6 +10,7 @@ interface ProductCardProps {
   product: Product;
   isWishlisted: boolean;
   onToggleWishlist: (id: string) => void;
+  onQuickView: (id: string) => void;
   formatPrice: (price: number) => string;
 }
 
@@ -18,6 +19,7 @@ export const ProductCard = ({
   isWishlisted,
   onToggleWishlist,
   formatPrice,
+  onQuickView
 }: ProductCardProps) => {
   const productImage = product.images?.[0] || "📦";
 
@@ -91,7 +93,9 @@ export const ProductCard = ({
 
         {/* Quick View Overlay */}
         <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
-          <button className="px-2 py-1 bg-white rounded-md text-[9px] font-medium text-[#111827] hover:bg-[#10b981] hover:text-white transition-all duration-200 transform scale-90 group-hover:scale-100 shadow-lg">
+          <button 
+           onClick={() => onQuickView(product.id)}
+          className="px-2 py-1 bg-white rounded-md text-[9px] font-medium text-[#111827] hover:bg-[#10b981] hover:text-white transition-all duration-200 transform scale-90 group-hover:scale-100 shadow-lg">
             Quick View
           </button>
         </div>

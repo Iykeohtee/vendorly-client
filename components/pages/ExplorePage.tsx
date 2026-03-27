@@ -20,6 +20,7 @@ import { Categories } from "@/components/explore/Categories";
 import { ProductCard } from "@/components/explore/ProductCard";
 import { SectionHeader } from "@/components/explore/SectionHeader";
 import { TopVendors } from "@/components/explore/TopVendors";
+import { ProductQuickViewModal } from "../explore/ProduckQuickViewModal";
 import { Flame, TrendingUp, Clock, Filter as FilterIcon } from "lucide-react";
 
 const formatPrice = (price: number) => `₦${price.toLocaleString()}`;
@@ -27,12 +28,20 @@ const formatPrice = (price: number) => `₦${price.toLocaleString()}`;
 export default function Explore() {
   const [searchQuery, setSearchQuery] = useState("");
   const [wishlist, setWishlist] = useState<string[]>([]);
+  const [selectedProductId, setSelectedProductId] = useState<string | null>(
+    null,
+  );
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const {
     trendingToday,
     trendingWeek,
     isLoadingTrending,
     products,
+    productDetails,
+    isProductDetailsLoading,
+    isProductDetailsFetching,
+    clearSelected,
     categories,
     filters,
     isLoadingCategories,
@@ -40,10 +49,9 @@ export default function Explore() {
     changePage,
     refreshProducts,
     pagination,
-  } = useExplore();
+  } = useExplore(selectedProductId!);
 
   const handleCategoryChange = (category: string) => {
-    console.log("Category clicked:", category);
     updateFilters({
       category: category === "All" ? undefined : category,
       page: 1,
@@ -59,6 +67,17 @@ export default function Explore() {
     setWishlist((prev) =>
       prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id],
     );
+  };
+
+  const handleQuickView = (productId: string) => {
+    setSelectedProductId(productId);
+    setIsModalOpen(true);
+  };
+
+  const closeModal = () => {
+    setIsModalOpen(false);
+    setSelectedProductId(null);
+    clearSelected();
   };
 
   const newArrivals = useMemo(() => {
@@ -117,6 +136,7 @@ export default function Explore() {
                   isWishlisted={false}
                   onToggleWishlist={() => {}}
                   formatPrice={formatPrice}
+                  onQuickView={handleQuickView}
                 />
               ))}
             </div>
@@ -142,6 +162,7 @@ export default function Explore() {
                 isWishlisted={false}
                 onToggleWishlist={() => {}}
                 formatPrice={formatPrice}
+                onQuickView={handleQuickView}
               />
             ))}
           </div>
@@ -202,7 +223,10 @@ export default function Explore() {
 
                   {/* Quick View Overlay */}
                   <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
-                    <button className="px-2 py-1 bg-white rounded-md text-[9px] font-medium text-[#111827] hover:bg-[#10b981] hover:text-white transition-all duration-200 transform scale-90 group-hover:scale-100 shadow-lg">
+                    <button
+                      onClick={() => handleQuickView(product.id)}
+                      className="px-2 py-1 bg-white rounded-md text-[9px] font-medium text-[#111827] hover:bg-[#10b981] hover:text-white transition-all duration-200 transform scale-90 group-hover:scale-100 shadow-lg"
+                    >
                       Quick View
                     </button>
                   </div>
@@ -264,6 +288,7 @@ export default function Explore() {
                 isWishlisted={wishlist.includes(product.id)}
                 onToggleWishlist={toggleWishlist}
                 formatPrice={formatPrice}
+                onQuickView={handleQuickView}
               />
             ))}
           </div>
@@ -280,6 +305,19 @@ export default function Explore() {
           </div>
         </section>
       </div>
+
+      {/* Quick View Modal */}
+      <ProductQuickViewModal
+        isOpen={isModalOpen}
+        onClose={closeModal}  
+        product={productDetails}
+        isLoading={isProductDetailsLoading || isProductDetailsFetching}
+        isWishlisted={
+          productDetails ? wishlist.includes(productDetails.id) : false   
+        }
+        onToggleWishlist={toggleWishlist}
+        formatPrice={formatPrice}
+      />
 
       {/* Footer */}
       <footer className="border-t border-[#e5e7eb] bg-gradient-to-b from-white to-[#f9fafb] py-10 mt-8">

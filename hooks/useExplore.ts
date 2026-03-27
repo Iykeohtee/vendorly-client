@@ -23,7 +23,7 @@ import {
 } from "@/redux/slices/exploreSlice";
 import { ExploreFilters } from "@/types/explore";
 
-export const useExplore = () => {
+export const useExplore = (productId?: string) => {
   const dispatch = useDispatch<AppDispatch>();
   const queryClient = useQueryClient();
   const explore = useSelector((state: RootState) => state.explore);
@@ -168,29 +168,26 @@ export const useExplore = () => {
   });
 
   // Query for single product
-  const useProductDetails = (productId: string) => {
-    return useQuery({
-      queryKey: ["explore", "product", productId],
-      queryFn: async () => {
-        dispatch(setLoadingProduct(true));
-        try {
-          const response = await exploreService.getProductById(productId);
-          dispatch(setSelectedProduct(response));
-          return response;
-        } catch (error: any) {
-          dispatch(
-            setError(
-              error.response?.data?.message || "Failed to fetch product",
-            ),
-          );
-          throw error;
-        } finally {
-          dispatch(setLoadingProduct(false));
-        }
-      },
-      enabled: !!productId,
-    });
-  };
+  const productDetailsQuery = useQuery({
+    queryKey: ["explore", "product", productId],
+    queryFn: async () => {
+      if (!productId) throw new Error("No product ID provided");
+      dispatch(setLoadingProduct(true));
+      try {
+        const response = await exploreService.getProductById(productId);
+        dispatch(setSelectedProduct(response));
+        return response;
+      } catch (error: any) {
+        dispatch(
+          setError(error.response?.data?.message || "Failed to fetch product"),
+        );
+        throw error;
+      } finally {
+        dispatch(setLoadingProduct(false));
+      }
+    },
+    enabled: !!productId, // Only run when productId is provided
+  });
 
   // Actions
   const updateFilters = (newFilters: Partial<ExploreFilters>) => {
@@ -203,14 +200,16 @@ export const useExplore = () => {
   };
 
   const selectProduct = (productId: string) => {
-    queryClient
-      .fetchQuery({
-        queryKey: ["explore", "product", productId],
-        queryFn: () => exploreService.getProductById(productId),
-      })
-      .then((data) => {
-        dispatch(setSelectedProduct(data));
-      });
+    queryClient.invalidateQueries({
+      queryKey: ["explore", "product", productId],
+    });
+    // queryClient.fetchQuery({
+    //   queryKey: ["explore", "product", productId],
+    //   queryFn: () => exploreService.getProductById(productId),
+    // });
+    // .then((data) => {
+    //   dispatch(setSelectedProduct(data));
+    // });
   };
 
   const clearSelected = () => {
@@ -247,13 +246,20 @@ export const useExplore = () => {
     isLoadingProduct: explore.isLoadingProduct,
     isFetchingProducts: productsQuery.isFetching,
 
+    // Product details query
+    productDetails: productDetailsQuery.data,
+    isProductDetailsLoading: productDetailsQuery.isLoading,
+    isProductDetailsFetching: productDetailsQuery.isFetching,
+    isProductDetailsError: productDetailsQuery.isError,
+    productDetailsError: productDetailsQuery.error,
+
     // Error
     error: explore.error,
 
     // Query objects
     productsQuery,
     categoriesQuery,
-    useProductDetails,
+    productDetailsQuery,
     trendingTodayQuery,
     trendingWeekQuery,
     topVendorsQuery,

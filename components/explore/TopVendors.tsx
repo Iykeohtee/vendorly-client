@@ -11,8 +11,6 @@ export const TopVendors = () => {
   const { topVendors, categories } = useExplore();
   const [hoveredVendor, setHoveredVendor] = useState<string | null>(null);
 
-  console.log(topVendors)
-
   // Format date helper
   const formatJoinDate = (dateString: string) => {
     const date = new Date(dateString);
