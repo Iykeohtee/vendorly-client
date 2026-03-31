@@ -238,7 +238,7 @@ export default function SignupForm() {
           htmlFor="phone"
           className="block text-sm font-bold text-gray-800 mb-2"
         >
-          Phone Number <span className="text-red-500">*</span>
+          Whatsapp Number <span className="text-red-500">*</span>
         </label>
         <Input
           id="phone"

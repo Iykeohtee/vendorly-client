@@ -12,12 +12,12 @@ export default function VerifyEmailClient() {
   const searchParams = useSearchParams();
   const { verifyEmail, verificationStatus, resendVerificationEmail } =
     useAuth();
-  const { showToast } = useToast();
+  const { showToast } = useToast(); 
 
   // Store token in ref to prevent loss on re-renders
-  const tokenRef = useRef<string | null>(null);
+  const tokenRef = useRef<string | null>(null); 
   const emailRef = useRef<string | null>(null);
-  const hasVerifiedRef = useRef(false);
+  const hasVerifiedRef = useRef(false);   
 
   // Get values once and store them
   useEffect(() => {

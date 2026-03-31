@@ -128,6 +128,17 @@ export default function DashboardLayout({
     setMounted(true);
   }, []);
 
+  // Close mobile sidebar when screen size changes to desktop
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth >= 1024 && mobileSidebarOpen) {
+        setMobileSidebarOpen(false);
+      }
+    };
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, [mobileSidebarOpen]);
+
   // During SSR and initial hydration, render without user-dependent content
   if (!mounted) {
     return (
@@ -175,7 +186,7 @@ export default function DashboardLayout({
             </nav>
 
             {/* Settings and Logout */}
-            <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-gray-200">
+            <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-gray-200 mt-10">
               <div className="space-y-1">
                 <div className="flex items-center gap-3 px-3 py-2 rounded-lg text-gray-700">
                   <Settings className="h-5 w-5 flex-shrink-0" />
@@ -223,14 +234,14 @@ export default function DashboardLayout({
         {/* Sidebar */}
         <aside
           className={cn(
-            "fixed top-0 left-0 z-30 h-full bg-white border-r border-gray-200 transition-all duration-300",
+            "fixed top-0 left-0 z-30 h-full bg-white border-r border-gray-200 transition-all duration-300 flex flex-col",
             sidebarOpen ? "w-64" : "w-20",
             mobileSidebarOpen
               ? "translate-x-0"
               : "-translate-x-full lg:translate-x-0",
           )}
         >
-          {/* Sidebar header */}
+          {/* Sidebar header with close button for mobile */}
           <div className="flex items-center justify-between h-16 px-4 border-b border-gray-200">
             <div
               className={cn(
@@ -238,28 +249,40 @@ export default function DashboardLayout({
                 !sidebarOpen && "justify-center w-full",
               )}
             >
-              <div className="w-8 h-8 bg-green-500 rounded-lg flex items-center justify-center">
+              <div className="w-8 h-8 bg-green-500 rounded-lg flex items-center justify-center flex-shrink-0">
                 <span className="text-white font-bold text-lg">V</span>
               </div>
               {sidebarOpen && (
                 <span className="font-bold text-gray-800">Vendorly</span>
               )}
             </div>
-            <button
-              onClick={() => setSidebarOpen(!sidebarOpen)}
-              className="hidden lg:block p-1.5 hover:bg-gray-100 rounded-lg"
-            >
-              <ChevronRight
-                className={cn(
-                  "h-5 w-5 text-gray-500 transition-transform",
-                  !sidebarOpen && "rotate-180",
-                )}
-              />
-            </button>
+            <div className="flex items-center gap-2">
+              {/* X button for mobile sidebar */}
+              {mobileSidebarOpen && (
+                <button
+                  onClick={() => setMobileSidebarOpen(false)}
+                  className="lg:hidden p-1.5 hover:bg-gray-100 rounded-lg"
+                >
+                  <X className="h-5 w-5 text-gray-500" />
+                </button>
+              )}
+              {/* Chevron button for desktop */}
+              <button
+                onClick={() => setSidebarOpen(!sidebarOpen)}
+                className="hidden lg:block p-1.5 hover:bg-gray-100 rounded-lg"
+              >
+                <ChevronRight
+                  className={cn(
+                    "h-5 w-5 text-gray-500 transition-transform",
+                    !sidebarOpen && "rotate-180",
+                  )}
+                />
+              </button>
+            </div>
           </div>
 
-          {/* Navigation */}
-          <nav className="p-4 space-y-1">
+          {/* Navigation - with scroll for overflow */}
+          <nav className="flex-1 overflow-y-auto p-4 space-y-1">
             {navItems.map((item) => {
               const isActive = pathname === item.href;
               return (
@@ -293,7 +316,7 @@ export default function DashboardLayout({
                     </>
                   )}
                   {!sidebarOpen && (
-                    <div className="absolute left-full ml-2 px-2 py-1 bg-gray-900 text-white text-sm rounded-md opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all whitespace-nowrap">
+                    <div className="absolute left-full ml-2 px-2 py-1 bg-gray-900 text-white text-sm rounded-md opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all whitespace-nowrap z-50">
                       {item.title}
                     </div>
                   )}
@@ -302,35 +325,46 @@ export default function DashboardLayout({
             })}
           </nav>
 
-          {/* User section */}
-          <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-gray-200">
-            <div className="space-y-1">
-              <Link
-                href="/dashboard/settings"
+          {/* User section - fixed at bottom with proper spacing */}
+          <div className="flex-shrink-0 border-t border-gray-200 mt-auto">
+            <div className="p-4 space-y-1">
+              <button
+                disabled
                 className={cn(
-                  "flex items-center gap-3 px-3 py-2 rounded-lg text-gray-700 hover:bg-gray-100",
+                  "flex items-center gap-3 px-3 py-2 rounded-lg text-gray-700 opacity-60 cursor-not-allowed",
                   !sidebarOpen && "justify-center",
                 )}
               >
                 <Settings className="h-5 w-5 flex-shrink-0" />
                 {sidebarOpen && <span className="text-sm">Settings</span>}
-              </Link>
+                {!sidebarOpen && (
+                  <div className="absolute left-full ml-2 px-2 py-1 bg-gray-900 text-white text-sm rounded-md opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all whitespace-nowrap z-50">
+                    Settings
+                  </div>
+                )}
+              </button>
               <button
                 onClick={logout}
                 className={cn(
-                  "w-full flex items-center gap-3 px-3 py-2 rounded-lg text-gray-700 hover:bg-gray-100",
+                  "w-full flex items-center gap-3 px-3 py-2 rounded-lg text-gray-700 hover:bg-gray-100 transition-colors relative group",
                   !sidebarOpen && "justify-center",
                 )}
               >
                 <LogOut className="h-5 w-5 flex-shrink-0" />
                 {sidebarOpen && <span className="text-sm">Logout</span>}
+                {!sidebarOpen && (
+                  <div className="absolute left-full ml-2 px-2 py-1 bg-gray-900 text-white text-sm rounded-md opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all whitespace-nowrap z-50">
+                    Logout
+                  </div>
+                )}
               </button>
             </div>
 
+            {/* User info - only visible when sidebar is open */}
             {sidebarOpen && user && (
-              <div className="mt-4 pt-4 border-t border-gray-200">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center">
+              <div className="px-4 pb-4 pt-2">
+                <div className="flex items-center gap-3 px-3 py-2 rounded-lg bg-gray-50">
+                  <div className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center flex-shrink-0">
                     <User className="h-5 w-5 text-gray-600" />
                   </div>
                   <div className="flex-1 min-w-0">
@@ -367,25 +401,26 @@ export default function DashboardLayout({
 
               <div className="flex-1" />
 
-              {/* Store link with copy functionality */}
-              <div className="flex items-center gap-4">
+              {/* Store link with copy functionality - responsive */}
+              <div className="flex items-center gap-2 sm:gap-4">
                 {user?.vendor?.storeSlug && (
-                  <div className="flex items-center gap-2 bg-gray-50 rounded-lg px-3 py-1.5">
+                  <div className="flex items-center gap-1 sm:gap-2 bg-gray-50 rounded-lg px-2 sm:px-3 py-1.5">
                     {/* Store link with tooltip */}
                     <Tooltip>
                       <TooltipTrigger asChild>
                         <Link
                           href={`/${user.vendor.storeSlug}`}
-                          className="group flex items-center gap-1 text-sm font-medium text-gray-700 hover:text-green-600 transition-colors"
+                          className="group flex items-center gap-1 text-xs sm:text-sm font-medium text-gray-700 hover:text-green-600 transition-colors"
                           target="_blank"
                         >
-                          <span>My Store</span>
-                          <ExternalLink className="h-3.5 w-3.5 opacity-0 group-hover:opacity-100 transition-opacity" />
+                          <span className="hidden xs:inline">My Store</span>
+                          <span className="xs:hidden">Store</span>
+                          <ExternalLink className="h-3 w-3 sm:h-3.5 sm:w-3.5 opacity-0 group-hover:opacity-100 transition-opacity" />
                         </Link>
                       </TooltipTrigger>
                       <TooltipContent
                         side="bottom"
-                        className="max-w-xs text-center bg-green-700"
+                        className="max-w-xs text-center"
                       >
                         <p>
                           Copy your store link and share with your customers
@@ -409,7 +444,7 @@ export default function DashboardLayout({
           </header>
 
           {/* Page content */}
-          <main className="p-6">{children}</main>
+          <main className="p-4 sm:p-6">{children}</main>
         </div>
       </div>
     </TooltipProvider>

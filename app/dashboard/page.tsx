@@ -286,20 +286,23 @@ export default function DashboardPage() {
   return (
     <div className="space-y-6">
       {/* Welcome section with gradient */}
-      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-emerald-500 to-emerald-600 p-6 text-white">
+      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-emerald-500 to-emerald-600 p-4 sm:p-6 md:p-8 text-white">
         <div className="relative z-10">
-          <h1 className="text-2xl font-bold">Dashboard Overview</h1>
-          <p className="text-emerald-50 mt-1 flex items-center gap-1">
+          <h1 className="text-xl sm:text-2xl md:text-3xl font-bold">
+            Dashboard Overview
+          </h1>
+          <p className="text-emerald-50 mt-1 sm:mt-2 flex items-center gap-2 text-sm sm:text-base">
             Welcome back,{" "}
-            <span className="font-semibold">
-              {user?.vendor?.storeName || "Guest"}
+            <span className="font-semibold truncate max-w-[150px] sm:max-w-[200px] md:max-w-none text-amber-100">
+              {user?.vendor?.storeName}
             </span>
-            <span className="text-2xl ml-1">👋</span>
+            <span className="text-xl sm:text-2xl ml-1">👋</span>
           </p>
         </div>
-        {/* Decorative elements */}
-        <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -translate-y-32 translate-x-32"></div>
-        <div className="absolute bottom-0 left-0 w-48 h-48 bg-emerald-400/20 rounded-full -translate-x-24 translate-y-24"></div>
+
+        {/* Decorative elements - adjusted for different screen sizes */}
+        <div className="absolute top-0 right-0 w-48 sm:w-64 h-48 sm:h-64 bg-white/10 rounded-full -translate-y-24 sm:-translate-y-32 translate-x-24 sm:translate-x-32"></div>
+        <div className="absolute bottom-0 left-0 w-36 sm:w-48 h-36 sm:h-48 bg-emerald-400/20 rounded-full -translate-x-16 sm:-translate-x-24 translate-y-16 sm:translate-y-24"></div>
       </div>
 
       {/* Stats cards - Professional with number abbreviation */}
