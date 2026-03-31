@@ -401,7 +401,7 @@ export default function DashboardLayout({
 
               <div className="flex-1" />
 
-              {/* Store link with copy functionality - responsive */}
+              {/* Store link with copy functionality */}
               <div className="flex items-center gap-2 sm:gap-4">
                 {user?.vendor?.storeSlug && (
                   <div className="flex items-center gap-1 sm:gap-2 bg-gray-50 rounded-lg px-2 sm:px-3 py-1.5">
