@@ -404,38 +404,42 @@ export default function DashboardLayout({
               {/* Store link with copy functionality */}
               <div className="flex items-center gap-2 sm:gap-4">
                 {user?.vendor?.storeSlug && (
-                  <div className="flex items-center gap-1 sm:gap-2 bg-gray-50 rounded-lg px-2 sm:px-3 py-1.5">
-                    {/* Store link with tooltip */}
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Link
-                          href={`/${user.vendor.storeSlug}`}
-                          className="group flex items-center gap-1 text-xs sm:text-sm font-medium text-gray-700 hover:text-green-600 transition-colors"
-                          target="_blank"
-                        >
-                          <span className="hidden xs:inline">My Store</span>
-                          <span className="xs:hidden">Store</span>
-                          <ExternalLink className="h-3 w-3 sm:h-3.5 sm:w-3.5 opacity-0 group-hover:opacity-100 transition-opacity" />
-                        </Link>
-                      </TooltipTrigger>
-                      <TooltipContent
-                        side="bottom"
-                        className="max-w-xs text-center"
-                      >
-                        <p>
-                          Copy your store link and share with your customers
-                        </p>
-                      </TooltipContent>
-                    </Tooltip>
+                  <>
+                    {/* Info text - responsive */}
+                    <div className="hidden sm:flex items-center gap-1 bg-blue-50 px-3 py-1.5 rounded-lg">
+                      <span className="text-xs text-blue-700 whitespace-nowrap">
+                        💡 Click the copy icon to share your store link with
+                        customers
+                      </span>
+                    </div>
 
-                    {/* Copy button */}
-                    <CopyButton
-                      storeUrl={`${process.env.NEXT_PUBLIC_CLIENT_URL}/${user.vendor.storeSlug}`}
-                    />
-                  </div>
+                    {/* Mobile version  */}
+                    <div className="sm:hidden flex items-center gap-1 bg-blue-50 px-2 py-1 rounded-lg">
+                      <span className="text-xs text-blue-700 whitespace-nowrap">
+                        💡 Click copy icon to share
+                      </span>
+                    </div>
+
+                    {/* Store link and copy button */}
+                    <div className="flex items-center gap-1 sm:gap-2 bg-gray-50 rounded-lg px-2 sm:px-3 py-1.5">
+                      <Link
+                        href={`/${user.vendor.storeSlug}`}
+                        className="group flex items-center text-xs sm:text-sm font-medium text-gray-700 hover:text-green-600 transition-colors"
+                        target="_blank"
+                      >
+                        <span className="hidden xs:inline">My Store</span>
+                        <span className="xs:hidden">Store</span>
+                        <ExternalLink className="h-3 w-3 sm:h-3.5 sm:w-3.5 opacity-0 group-hover:opacity-100 transition-opacity" />
+                      </Link>
+
+                      <CopyButton
+                        storeUrl={`${process.env.NEXT_PUBLIC_CLIENT_URL}/${user.vendor.storeSlug}`}
+                      />
+                    </div>
+                  </>
                 )}
 
-                <button className="p-2 rounded-lg hover:bg-gray-100 relative">
+                <button className="hidden lg:block p-2 rounded-lg hover:bg-gray-100 relative">
                   <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full" />
                   <BarChart3 className="h-5 w-5 text-gray-600" />
                 </button>
