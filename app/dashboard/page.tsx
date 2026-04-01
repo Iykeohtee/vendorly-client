@@ -51,6 +51,7 @@ interface DashboardStats {
 // Single API call to get all dashboard data
 const fetchDashboardStats = async (): Promise<DashboardStats> => {
   const response = await axiosInstance.get("/dashboard/stats");
+  console.log(response.data)
   return response.data;
 };
 
@@ -338,10 +339,10 @@ export default function DashboardPage() {
         {/* Products Card */}
         <StatCard
           title="Products"
-          value={stats?.products?.total || 0}
+          value={stats?.products?.total!}
           icon={Package}
           trend={stats?.products?.newThisMonth}
-          trendLabel="new this month"
+          trendLabel={`${stats?.products?.newThisMonth} new this month`}
           trendDirection="up"
           iconBgColor="bg-amber-50"
           iconColor="text-amber-600"
@@ -353,9 +354,9 @@ export default function DashboardPage() {
           value={stats?.customers?.total || 0}
           icon={Users}
           trend={stats?.customers?.percentageChange}
-          trendLabel={`${stats?.customers?.newThisMonth || 0} new this month`}
+          trendLabel={`${stats?.customers?.newThisMonth} new this month`}
           trendDirection={
-            (stats?.customers?.percentageChange || 0) >= 0 ? "up" : "down"
+            (stats?.customers?.percentageChange!) >= 0 ? "up" : "down"
           }
           iconBgColor="bg-purple-50"
           iconColor="text-purple-600"

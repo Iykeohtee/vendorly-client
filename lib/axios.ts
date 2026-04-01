@@ -28,6 +28,17 @@ axiosInstance.interceptors.response.use(
   async (error) => {
     const originalRequest = error.config;
 
+    // Skip refresh for auth endpoints
+    const isLoginEndpoint = originalRequest.url?.includes("/auth/login");
+    const isRegisterEndpoint = originalRequest.url?.includes("/auth/register");
+    const isVerifyEndpoint =
+      originalRequest.url?.includes("/auth/verify-email");
+
+    // Don't intercept auth endpoints except for refresh
+    if (isLoginEndpoint || isRegisterEndpoint || isVerifyEndpoint) {
+      return Promise.reject(error);
+    }
+
     // Prevent infinite loop - don't retry refresh requests
     if (originalRequest.url?.includes("/auth/refresh")) {
       // Refresh failed - redirect to login
