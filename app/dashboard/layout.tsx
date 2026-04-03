@@ -249,11 +249,15 @@ export default function DashboardLayout({
                 !sidebarOpen && "justify-center w-full",
               )}
             >
-              <div className="w-8 h-8 bg-green-500 rounded-lg flex items-center justify-center flex-shrink-0">
+              <Link
+               href="/"
+              className="w-8 h-8 bg-green-500 rounded-lg flex items-center justify-center flex-shrink-0">
                 <span className="text-white font-bold text-lg">V</span>
-              </div>
+              </Link>
               {sidebarOpen && (
-                <span className="font-bold text-gray-800">Vendorly</span>
+                <Link href="/" className="text-lg font-bold text-gray-800">
+                  Vendorly
+                </Link>
               )}
             </div>
             <div className="flex items-center gap-2">
