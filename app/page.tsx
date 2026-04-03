@@ -10,6 +10,7 @@ import {
   Smartphone,
   TrendingUp,
 } from "lucide-react";
+import Image from "next/image";
 
 export default function Home() {
   return (
@@ -76,17 +77,12 @@ export default function Home() {
             <div className="lg:col-span-1">
               <div className="relative w-full h-[500px] rounded-2xl overflow-hidden bg-gradient-to-br from-green-200 to-green-300">
                 {/* Placeholder for image - you can replace this with an actual image */}
-                <div className="w-full h-full flex items-center justify-center">
-                  <div className="text-center p-8">
-                    <div className="w-32 h-32 mx-auto mb-4 bg-white/20 rounded-full flex items-center justify-center">
-                      <ShoppingBag className="h-16 w-16 text-white" />
-                    </div>
-                    <p className="text-white/80 text-sm">Image placeholder</p>
-                    <p className="text-white/60 text-xs mt-2">
-                      Add your hero image here
-                    </p>
-                  </div>
-                </div>
+                <Image
+                  src="/images/hero-illustration.png"
+                  alt="Vendorly Storefront Example"
+                  fill
+                  className="object-cover object-center"
+                />
               </div>
             </div>
           </div>
