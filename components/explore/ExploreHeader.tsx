@@ -166,11 +166,12 @@ export const ExploreHeader = ({
                         user.profileImage ? 
                         <Image
                         src={user.profileImage!}
-                        height={50}
-                        width={50}
+                        height={500}
+                        width={500}
                         alt="user logo"
+                        className="h-full w-full object-cover"
                         /> : (
-                          <span>{getInitials(user.fullName || user.email || "User")}</span>
+                          <span>{getInitials(user.fullName || 'User')}</span>
                         )
                       } 
                      
