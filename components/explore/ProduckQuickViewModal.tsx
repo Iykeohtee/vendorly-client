@@ -113,15 +113,33 @@ export const ProductQuickViewModal = ({
 
         {isLoading ? (
           <div className="flex items-center justify-center h-[400px] md:h-[500px] w-full">
-            <div className="text-center">
-              <div className="relative">
-                <div className="absolute inset-0 bg-[#10b981]/20 rounded-full blur-xl animate-pulse" />
-                <RefreshCw className="h-10 w-10 md:h-12 md:w-12 text-[#10b981] animate-spin mx-auto mb-4 relative" />
-              </div>
-              <p className="text-sm text-[#6b7280] font-medium">
-                Loading product details...
-              </p>
+            <div className="flex items-center justify-center gap-1">
+              {["v", "e", "n", "d", "o", "r", "l", "y"].map((letter, index) => (
+                <span
+                  key={index}
+                  className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-[#10b981] to-[#059669] bg-clip-text text-transparent"
+                  style={{
+                    animation: `bounceSmooth 1.4s ease-in-out infinite`,
+                    animationDelay: `${index * 0.12}s`,
+                    display: "inline-block",
+                    transformOrigin: "center",
+                  }}
+                >
+                  {letter}
+                </span>
+              ))}
             </div>
+            <style jsx>{`
+              @keyframes bounceSmooth {
+                0%,
+                100% {
+                  transform: translateY(0px);
+                }
+                50% {
+                  transform: translateY(-20px);
+                }
+              }
+            `}</style>
           </div>
         ) : product ? (
           <>
@@ -278,7 +296,9 @@ export const ProductQuickViewModal = ({
                 </div>
                 <div className="flex items-center gap-1 md:gap-2 text-[9px] sm:text-[10px] md:text-sm text-[#6b7280] bg-[#f9fafb] rounded-lg px-1.5 sm:px-2 md:px-3 py-1 sm:py-1.5 md:py-2">
                   <RefreshCw className="h-2.5 w-2.5 sm:h-3 sm:w-3 md:h-4 md:w-4 text-[#10b981] flex-shrink-0" />
-                  <span className="truncate">No what I ordered vs what I got</span>
+                  <span className="truncate">
+                    No what I ordered vs what I got
+                  </span>
                 </div>
                 <div className="flex items-center gap-1 md:gap-2 text-[9px] sm:text-[10px] md:text-sm text-[#6b7280] bg-[#f9fafb] rounded-lg px-1.5 sm:px-2 md:px-3 py-1 sm:py-1.5 md:py-2">
                   <Zap className="h-2.5 w-2.5 sm:h-3 sm:w-3 md:h-4 md:w-4 text-[#10b981] flex-shrink-0" />

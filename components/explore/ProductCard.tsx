@@ -15,11 +15,11 @@ interface ProductCardProps {
 }
 
 export const ProductCard = ({
-  product,  
+  product,
   isWishlisted,
   onToggleWishlist,
   formatPrice,
-  onQuickView
+  onQuickView,
 }: ProductCardProps) => {
   const productImage = product.images?.[0] || "📦";
 
@@ -29,8 +29,8 @@ export const ProductCard = ({
 
   const isLowStock = product.quantity > 0 && product.quantity < 5;
   const isOutOfStock = product.quantity === 0;
-  
-  const discountPercentage = product.discountPrice 
+
+  const discountPercentage = product.discountPrice
     ? Math.round((1 - product.price / product.discountPrice) * 100)
     : null;
 
@@ -72,7 +72,7 @@ export const ProductCard = ({
         {/* Wishlist Button - Smaller */}
         <button
           onClick={() => onToggleWishlist(product.id)}
-          className="absolute top-1.5 right-1.5 h-6 w-6 rounded-full bg-white/90 backdrop-blur-sm flex items-center justify-center hover:bg-white transition-all duration-200 shadow-sm opacity-0 group-hover:opacity-100 translate-x-1 group-hover:translate-x-0"
+          className="absolute top-1.5 right-1.5 h-6 w-6 rounded-full bg-white/90 backdrop-blur-sm flex items-center justify-center hover:bg-white transition-all duration-200 shadow-sm opacity-0 group-hover:opacity-100 translate-x-1 group-hover:translate-x-0 md:opacity-0 md:group-hover:opacity-100"
         >
           <Heart
             className={`h-3 w-3 transition-all ${
@@ -91,11 +91,12 @@ export const ProductCard = ({
           </span>
         </div>
 
-        {/* Quick View Overlay */}
-        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
-          <button 
-           onClick={() => onQuickView(product.id)}
-          className="px-2 py-1 bg-white rounded-md text-[9px] font-medium text-[#111827] hover:bg-[#10b981] hover:text-white transition-all duration-200 transform scale-90 group-hover:scale-100 shadow-lg">
+        {/* Quick View Overlay - Always visible on mobile/tablet, on hover on desktop */}
+        <div className="absolute inset-0 bg-black/40 md:opacity-0 md:group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+          <button
+            onClick={() => onQuickView(product.id)}
+            className="px-2 py-1 bg-white rounded-md text-[9px] font-medium text-[#111827] hover:bg-[#10b981] hover:text-white transition-all duration-200 transform scale-90 md:group-hover:scale-100 shadow-lg"
+          >
             Quick View
           </button>
         </div>
@@ -107,12 +108,12 @@ export const ProductCard = ({
         <p className="text-[9px] text-[#6b7280] truncate">
           {product.vendor?.storeName || "Unknown"}
         </p>
-        
+
         {/* Product Name */}
         <h3 className="font-semibold text-[10px] leading-tight line-clamp-2 text-[#111827] group-hover:text-[#10b981] transition-colors min-h-[24px]">
           {product.name}
         </h3>
-        
+
         {/* Price */}
         <div className="flex items-center gap-1 flex-wrap">
           <span className="font-bold text-xs text-[#10b981]">
@@ -129,7 +130,7 @@ export const ProductCard = ({
             </>
           )}
         </div>
-        
+
         {/* Rating */}
         <div className="flex items-center gap-1">
           <div className="flex items-center gap-0.5">

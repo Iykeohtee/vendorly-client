@@ -22,7 +22,7 @@ export const ProfileAvatar = ({
     <div className="relative">
       <div className="relative">
         <Avatar className="h-24 w-24 border-4 border-background shadow-xl">
-          <AvatarImage src={getImageUrl(profileImage)} />
+          <AvatarImage src={getImageUrl(profileImage)} className="h-full w-full object-cover"/>
           <AvatarFallback className="bg-primary/10 text-primary text-xl font-semibold">
             {getInitials(fullName)}
           </AvatarFallback>

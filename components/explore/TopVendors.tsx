@@ -73,7 +73,7 @@ export const TopVendors = () => {
                         height={80}
                         width={80}
                         alt={`${vendor.storeName} logo`}
-                        className="object-cover scale-100 group-hover:scale-110 transition-transform duration-500"
+                        className="h-full w-full object-cover scale-100 group-hover:scale-110 transition-transform duration-500"
                       />
                     ) : (
                       <div className="w-full h-full bg-gradient-to-br from-[#10b981]/10 to-[#10b981]/5 flex items-center justify-center">
