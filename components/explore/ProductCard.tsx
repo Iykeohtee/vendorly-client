@@ -35,14 +35,14 @@ export const ProductCard = ({
     : null;
 
   return (
-    <Card className="group relative overflow-hidden transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5 border border-[#e5e7eb] bg-white rounded-lg">
+    <Card className="group/card relative overflow-hidden transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5 border border-[#e5e7eb] bg-white rounded-lg">
       {/* Image Container - Reduced height */}
       <div className="relative aspect-square bg-gradient-to-br from-[#f9fafb] to-[#f3f4f6] overflow-hidden">
         {productImage.startsWith("http") ? (
           <img
             src={productImage}
             alt={product.name}
-            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+            className="w-full h-full object-cover transition-transform duration-500 group-hover/card:scale-110"
           />
         ) : (
           <div className="w-full h-full flex items-center justify-center text-4xl opacity-50">
@@ -72,13 +72,13 @@ export const ProductCard = ({
         {/* Wishlist Button - Smaller */}
         <button
           onClick={() => onToggleWishlist(product.id)}
-          className="absolute top-1.5 right-1.5 h-6 w-6 rounded-full bg-white/90 backdrop-blur-sm flex items-center justify-center hover:bg-white transition-all duration-200 shadow-sm opacity-0 group-hover:opacity-100 translate-x-1 group-hover:translate-x-0 md:opacity-0 md:group-hover:opacity-100"
+          className="absolute top-1.5 right-1.5 h-6 w-6 rounded-full bg-white/90 backdrop-blur-sm flex items-center justify-center hover:bg-white transition-all duration-200 shadow-sm opacity-0 group-hover/card:opacity-100 translate-x-1 group-hover/card:translate-x-0 md:opacity-0 md:group-hover/card:opacity-100"
         >
           <Heart
             className={`h-3 w-3 transition-all ${
               isWishlisted
                 ? "fill-[#ef4444] text-[#ef4444] scale-110"
-                : "text-[#9ca3af] group-hover:text-[#ef4444]"
+                : "text-[#9ca3af] group-hover/card:text-[#ef4444]"
             }`}
           />
         </button>
@@ -92,10 +92,10 @@ export const ProductCard = ({
         </div>
 
         {/* Quick View Overlay - Always visible on mobile/tablet, on hover on desktop */}
-        <div className="absolute inset-0 bg-black/40 md:opacity-0 md:group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+        <div className="absolute inset-0 bg-black/40 md:opacity-0 md:group-hover/card:opacity-100 transition-opacity duration-300 flex items-center justify-center">
           <button
             onClick={() => onQuickView(product.id)}
-            className="px-2 py-1 bg-white rounded-md text-[9px] font-medium text-[#111827] hover:bg-[#10b981] hover:text-white transition-all duration-200 transform scale-90 md:group-hover:scale-100 shadow-lg"
+            className="px-2 py-1 bg-white rounded-md text-[9px] font-medium text-[#111827] hover:bg-[#10b981] hover:text-white transition-all duration-200 transform scale-90 md:group-hover/card:scale-100 shadow-lg"
           >
             Quick View
           </button>
@@ -110,7 +110,7 @@ export const ProductCard = ({
         </p>
 
         {/* Product Name */}
-        <h3 className="font-semibold text-[10px] leading-tight line-clamp-2 text-[#111827] group-hover:text-[#10b981] transition-colors min-h-[24px]">
+        <h3 className="font-semibold text-[10px] leading-tight line-clamp-2 text-[#111827] group-hover/card:text-[#10b981] transition-colors min-h-[24px]">
           {product.name}
         </h3>
 
