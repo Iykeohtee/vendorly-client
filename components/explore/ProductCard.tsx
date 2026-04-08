@@ -5,6 +5,10 @@ import { Badge } from "@/components/ui/badge";
 import Button from "@/components/ui/Button";
 import { Heart, Eye, Star, ShoppingCart } from "lucide-react";
 import { Product } from "@/types/explore";
+import { useOrder } from "@/hooks/useOrder";
+import { useSelector } from "react-redux";
+import { RootState } from "@/redux/store";
+import { toast } from "sonner";
 
 interface ProductCardProps {
   product: Product;
@@ -21,6 +25,8 @@ export const ProductCard = ({
   formatPrice,
   onQuickView,
 }: ProductCardProps) => {
+  const { createOrder, isCreating } = useOrder();
+  const { user } = useSelector((state: RootState) => state.auth);
   const productImage = product.images?.[0] || "📦";
 
   const isHotDeal = product.tags?.some((tag) =>
@@ -33,6 +39,47 @@ export const ProductCard = ({
   const discountPercentage = product.discountPrice
     ? Math.round((1 - product.price / product.discountPrice) * 100)
     : null;
+
+  const handleWhatsAppOrder = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+
+    if (!product.vendor.user.phone) return;
+
+    const formatToInternational = (phone: string) => {
+      let cleaned = phone.replace(/[^\d]/g, "");
+
+      // If number starts with 0, replace with 234
+      if (cleaned.startsWith("0")) {
+        cleaned = "234" + cleaned.slice(1);
+      }
+
+      return cleaned;
+    };
+
+    try {
+      await createOrder({
+        productId: product.id,
+        vendorId: product.vendor.id,
+        customerId: user?.id!,
+        customerName: user?.fullName!,
+        customerPhone: user?.phone!,
+        productName: product.name,
+      });
+
+      const phoneNumber = formatToInternational(product.vendor.user.phone);
+
+      const message = `Hello, I'm interested in ordering: Product: ${product.name} Price: ₦${product.price.toLocaleString()}. Please let me know how to proceed with the order.`;
+
+      const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
+
+      window.open(whatsappUrl, "_blank", "noopener,noreferrer");
+    } catch (error: any) {
+      toast.error(error.response?.data?.message, {
+        position: "top-center",
+      });
+      console.error("Failed to create order:", error);
+    }
+  };
 
   return (
     <Card className="group/card relative overflow-hidden transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5 border border-[#e5e7eb] bg-white rounded-lg">
@@ -140,14 +187,15 @@ export const ProductCard = ({
           <span className="text-[8px] text-[#9ca3af]">(128)</span>
         </div>
 
-        {/* Order Button - Smaller */}
+        {/* Order Button */}
         <Button
           className="w-full mt-1 bg-[#10b981] hover:bg-[#059669] text-white font-medium text-[10px] h-7 transition-all duration-200 group/btn rounded-md"
           size="sm"
           disabled={isOutOfStock}
+          onClick={handleWhatsAppOrder}
         >
           <ShoppingCart className="mr-1 h-2.5 w-2.5 group-hover/btn:scale-110 transition-transform" />
-          {isOutOfStock ? "Out of Stock" : "Order"}
+          {isCreating ? "Processing..." : "Order"}
         </Button>
       </CardContent>
     </Card>

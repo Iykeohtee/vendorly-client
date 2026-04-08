@@ -22,6 +22,7 @@ export interface Product {
     storeSlug: string;
     user: {
       fullName: string;
+      phone: string;
     };
   };
 }
