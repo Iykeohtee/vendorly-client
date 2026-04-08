@@ -25,9 +25,11 @@ export const ProductCard = ({
   formatPrice,
   onQuickView,
 }: ProductCardProps) => {
+
   const { createOrder, isCreating } = useOrder();
   const { user } = useSelector((state: RootState) => state.auth);
   const productImage = product.images?.[0] || "📦";
+
 
   const isHotDeal = product.tags?.some((tag) =>
     ["Hot Deal", "Hot", "Bestseller", "Trending"].includes(tag),
@@ -60,9 +62,9 @@ export const ProductCard = ({
       await createOrder({
         productId: product.id,
         vendorId: product.vendor.id,
-        customerId: user?.id!,
         customerName: user?.fullName!,
         customerPhone: user?.phone!,
+        customerId: user?.id!,
         productName: product.name,
       });
 
@@ -191,7 +193,7 @@ export const ProductCard = ({
         <Button
           className="w-full mt-1 bg-[#10b981] hover:bg-[#059669] text-white font-medium text-[10px] h-7 transition-all duration-200 group/btn rounded-md"
           size="sm"
-          disabled={isOutOfStock}
+          disabled={isOutOfStock && isCreating}
           onClick={handleWhatsAppOrder}
         >
           <ShoppingCart className="mr-1 h-2.5 w-2.5 group-hover/btn:scale-110 transition-transform" />

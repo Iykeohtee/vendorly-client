@@ -47,7 +47,6 @@ export const orderService = {
   }): Promise<{ orders: Order[]; pagination: any }> => {
     try {
       const response = await axiosInstance.get("/orders/vendor", { params });
-      console.log(response.data);
       return response.data;
     } catch (error: any) {
       const errorMessage =

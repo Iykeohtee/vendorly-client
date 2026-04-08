@@ -51,7 +51,6 @@ interface DashboardStats {
 // Single API call to get all dashboard data
 const fetchDashboardStats = async (): Promise<DashboardStats> => {
   const response = await axiosInstance.get("/dashboard/stats");
-  console.log(response.data)
   return response.data;
 };
 
