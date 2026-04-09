@@ -17,6 +17,7 @@ import { SectionHeader } from "./SectionHeader";
 import { useExplore } from "@/hooks/useExplore";
 import Image from "next/image";
 import { useState, useRef, useEffect } from "react";
+import Link from "next/link";
 
 interface TopVendorsProps {
   onViewAll?: () => void;
@@ -224,7 +225,7 @@ export const TopVendors = ({ onViewAll }: TopVendorsProps) => {
                 {/* Hover action button */}
                 <div className="mt-1 opacity-0 group-hover/vendor:opacity-100 transition-all duration-300 translate-y-1 group-hover/vendor:translate-y-0">
                   <button className="w-full text-[10px] bg-[#10b981]/10 text-[#10b981] py-1 rounded-lg font-medium hover:bg-[#10b981] hover:text-white transition-all duration-300">
-                    View Store
+                    <Link href={`/${vendor.storeSlug}`} className="w-full block h-full">View Store</Link>
                   </button>
                 </div>
 

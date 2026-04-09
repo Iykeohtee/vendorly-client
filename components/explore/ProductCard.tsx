@@ -25,11 +25,9 @@ export const ProductCard = ({
   formatPrice,
   onQuickView,
 }: ProductCardProps) => {
-
   const { createOrder, isCreating } = useOrder();
   const { user } = useSelector((state: RootState) => state.auth);
   const productImage = product.images?.[0] || "📦";
-
 
   const isHotDeal = product.tags?.some((tag) =>
     ["Hot Deal", "Hot", "Bestseller", "Trending"].includes(tag),
@@ -191,13 +189,47 @@ export const ProductCard = ({
 
         {/* Order Button */}
         <Button
-          className="w-full mt-1 bg-[#10b981] hover:bg-[#059669] text-white font-medium text-[10px] h-7 transition-all duration-200 group/btn rounded-md"
+          className={`w-full mt-1 font-medium text-[10px] h-7 transition-all duration-200 rounded-md disabled:cursor-not-allowed ${
+            isCreating
+              ? "bg-gray-400 hover:bg-gray-400 text-white"
+              : isOutOfStock
+                ? "bg-gray-300 hover:bg-gray-300 text-gray-500"
+                : "bg-[#10b981] hover:bg-[#059669] text-white"
+          }`}
           size="sm"
-          disabled={isOutOfStock && isCreating}
+          disabled={isOutOfStock || isCreating}
           onClick={handleWhatsAppOrder}
         >
-          <ShoppingCart className="mr-1 h-2.5 w-2.5 group-hover/btn:scale-110 transition-transform" />
-          {isCreating ? "Processing..." : "Order"}
+          {isCreating ? (
+            <div className="flex items-center justify-center gap-1">
+              <svg
+                className="animate-spin h-3 w-3 text-white"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+              >
+                <circle
+                  className="opacity-25"
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="currentColor"
+                  strokeWidth="4"
+                ></circle>
+                <path
+                  className="opacity-75"
+                  fill="currentColor"
+                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                ></path>
+              </svg>
+              <span>Processing...</span>
+            </div>
+          ) : (
+            <>
+              <ShoppingCart className="mr-1 h-2.5 w-2.5 transition-transform" />
+              {isOutOfStock ? "Out of Stock" : "Order"}
+            </>
+          )}
         </Button>
       </CardContent>
     </Card>
