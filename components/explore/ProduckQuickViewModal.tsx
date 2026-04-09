@@ -19,6 +19,10 @@ import {
 import Button from "@/components/ui/Button";
 import { Badge } from "@/components/ui/badge";
 import { Product } from "@/types/explore";
+import { useSelector } from "react-redux";
+import { RootState } from "@/redux/store";
+import { toast } from "sonner";
+import { useOrder } from "@/hooks/useOrder";
 
 interface ProductQuickViewModalProps {
   isOpen: boolean;
@@ -41,6 +45,8 @@ export const ProductQuickViewModal = ({
 }: ProductQuickViewModalProps) => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isImageLoading, setIsImageLoading] = useState(true);
+  const { user } = useSelector((state: RootState) => state.auth);
+  const { createOrder, isCreating } = useOrder();
 
   const images =
     product?.images?.filter((img) => img?.startsWith("http")) || [];
@@ -84,6 +90,47 @@ export const ProductQuickViewModal = ({
 
   if (!isOpen) return null;
 
+  const handleWhatsAppOrder = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+
+    if (!product?.vendor.user.phone) return;
+
+    const formatToInternational = (phone: string) => {
+      let cleaned = phone.replace(/[^\d]/g, "");
+
+      // If number starts with 0, replace with 234
+      if (cleaned.startsWith("0")) {
+        cleaned = "234" + cleaned.slice(1);
+      }
+
+      return cleaned;
+    };
+
+    try {
+      await createOrder({
+        productId: product.id,
+        vendorId: product.vendor.id,
+        customerName: user?.fullName!,
+        customerPhone: user?.phone!,
+        customerId: user?.id!,
+        productName: product.name,
+      });
+
+      const phoneNumber = formatToInternational(product.vendor.user.phone);
+
+      const message = `Hello, I'm interested in ordering: Product: ${product.name} Price: ₦${product.price.toLocaleString()}. Please let me know how to proceed with the order.`;
+
+      const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
+
+      window.open(whatsappUrl, "_blank", "noopener,noreferrer");
+    } catch (error: any) {
+      toast.error(error.response?.data?.message, {
+        position: "top-center",
+      });
+      console.error("Failed to create order:", error);
+    }
+  };
+
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 md:p-6 bg-black/70 backdrop-blur-md"
@@ -102,7 +149,7 @@ export const ProductQuickViewModal = ({
         </button>
 
         {/* ESC Hint */}
-        <div className="absolute bottom-3 left-1/2 -translate-x-1/2 z-20 bg-black/60 backdrop-blur-sm rounded-full px-2 md:px-3 py-0.5 md:py-1 pointer-events-none">
+        <div className="absolute bottom-3 left-1/2 -translate-x-1/2 z-20 bg-black/60 backdrop-blur-sm rounded-full px-2 md:px-3 py-0.5 md:py-1 pointer-events-none hidden lg:flex">
           <p className="text-[8px] md:text-[10px] text-white/80 flex items-center gap-1">
             <span className="bg-white/20 px-1 rounded text-[8px] md:text-[9px]">
               ESC
@@ -327,13 +374,48 @@ export const ProductQuickViewModal = ({
               {/* Action Buttons */}
               <div className="flex gap-2 md:gap-3">
                 <Button
-                  className="flex-1 bg-gradient-to-r from-[#10b981] to-[#059669] hover:from-[#059669] hover:to-[#047857] text-white font-semibold py-1.5 sm:py-2 md:py-2.5 text-[10px] sm:text-xs md:text-sm shadow-lg hover:shadow-xl transition-all duration-300"
-                  disabled={product.quantity === 0}
+                  className={`flex-1 font-semibold py-1.5 sm:py-2 md:py-2.5 text-[10px] sm:text-xs md:text-sm shadow-lg transition-all duration-300 ${
+                    isCreating
+                      ? "bg-gray-400 hover:bg-gray-400 cursor-not-allowed"
+                      : product.quantity === 0
+                        ? "bg-gray-300 hover:bg-gray-300 cursor-not-allowed"
+                        : "bg-gradient-to-r from-[#10b981] to-[#059669] hover:from-[#059669] hover:to-[#047857] hover:shadow-xl"
+                  }`}
+                  disabled={product.quantity === 0 || isCreating}
+                  onClick={handleWhatsAppOrder}
                 >
-                  <ShoppingCart className="mr-1 md:mr-1.5 h-3 w-3 sm:h-3.5 sm:w-3.5 md:h-4 md:w-4" />
-                  {product.quantity === 0
-                    ? "Out of Stock"
-                    : "Order on WhatsApp"}
+                  {isCreating ? (
+                    <div className="flex items-center justify-center gap-2">
+                      <svg
+                        className="animate-spin h-3 w-3 sm:h-3.5 sm:w-3.5 md:h-4 md:w-4 text-white"
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                      >
+                        <circle
+                          className="opacity-25"
+                          cx="12"
+                          cy="12"
+                          r="10"
+                          stroke="currentColor"
+                          strokeWidth="4"
+                        />
+                        <path
+                          className="opacity-75"
+                          fill="currentColor"
+                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                        />
+                      </svg>
+                      <span>Processing...</span>
+                    </div>
+                  ) : (
+                    <>
+                      <ShoppingCart className="mr-1 md:mr-1.5 h-3 w-3 sm:h-3.5 sm:w-3.5 md:h-4 md:w-4" />
+                      {product.quantity === 0
+                        ? "Out of Stock"
+                        : "Order on WhatsApp"}
+                    </>
+                  )}
                 </Button>
                 <Button
                   variant="outline"
