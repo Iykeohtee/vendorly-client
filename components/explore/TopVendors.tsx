@@ -225,7 +225,7 @@ export const TopVendors = ({ onViewAll }: TopVendorsProps) => {
                 {/* Hover action button */}
                 <div className="mt-1 opacity-0 group-hover/vendor:opacity-100 transition-all duration-300 translate-y-1 group-hover/vendor:translate-y-0">
                   <button className="w-full text-[10px] bg-[#10b981]/10 text-[#10b981] py-1 rounded-lg font-medium hover:bg-[#10b981] hover:text-white transition-all duration-300">
-                    <Link href={`/${vendor.storeSlug}`} className="w-full block h-full">View Store</Link>
+                    <Link href={`/${vendor.storeSlug}`} className="w-full block h-full" target="_blank">View Store</Link>
                   </button>
                 </div>
 
