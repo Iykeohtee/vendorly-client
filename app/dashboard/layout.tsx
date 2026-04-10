@@ -19,6 +19,7 @@ import {
   Copy,
   Check,
   ExternalLink,
+  Compass,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/useAuth";
@@ -63,6 +64,11 @@ const navItems: NavItem[] = [
     title: "Finances",
     href: "/dashboard/finances",
     icon: Wallet,
+  },
+  {
+    title: "Explore",
+    href: "/explore",
+    icon: Compass,
   },
   {
     title: "Profile",
@@ -250,8 +256,9 @@ export default function DashboardLayout({
               )}
             >
               <Link
-               href="/"
-              className="w-8 h-8 bg-green-500 rounded-lg flex items-center justify-center flex-shrink-0">
+                href="/"
+                className="w-8 h-8 bg-green-500 rounded-lg flex items-center justify-center flex-shrink-0"
+              >
                 <span className="text-white font-bold text-lg">V</span>
               </Link>
               {sidebarOpen && (
@@ -405,8 +412,8 @@ export default function DashboardLayout({
 
               <div className="flex-1" />
 
-              {/* Store link with copy functionality */}
               <div className="flex items-center gap-2 sm:gap-4">
+                {/* Store link with copy functionality */}
                 {user?.vendor?.storeSlug && (
                   <>
                     {/* Info text - responsive */}
@@ -417,7 +424,7 @@ export default function DashboardLayout({
                       </span>
                     </div>
 
-                    {/* Mobile version  */}
+                    {/* Mobile version */}
                     <div className="sm:hidden flex items-center gap-1 bg-blue-50 px-2 py-1 rounded-lg">
                       <span className="text-xs text-blue-700 whitespace-nowrap">
                         💡 Click copy icon to share
@@ -443,6 +450,27 @@ export default function DashboardLayout({
                   </>
                 )}
 
+                {/* Separator */}
+                {user?.vendor?.storeSlug && (
+                  <div className="hidden md:block w-px h-6 bg-gray-200" />
+                )}
+
+                {/* Explore Marketplace Button - Desktop */}
+                <Link href="/explore" className="hidden md:block">
+                  <button className="flex items-center gap-2 px-3 py-1.5 bg-gradient-to-r from-[#10b981] to-[#059669] hover:from-[#059669] hover:to-[#047857] text-white rounded-lg transition-all duration-200 shadow-sm hover:shadow-md">
+                    <Compass className="h-4 w-4" />
+                    <span className="text-sm font-medium">Explore</span>
+                  </button>
+                </Link>
+
+                {/* Explore Marketplace Button - Mobile */}
+                <Link href="/explore" className="md:hidden">
+                  <button className="p-2 rounded-lg bg-[#10b981]/10 hover:bg-[#10b981]/20 transition-colors">
+                    <Compass className="h-5 w-5 text-[#10b981]" />
+                  </button>
+                </Link>
+
+                {/* Analytics button */}
                 <button className="hidden lg:block p-2 rounded-lg hover:bg-gray-100 relative">
                   <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full" />
                   <BarChart3 className="h-5 w-5 text-gray-600" />
