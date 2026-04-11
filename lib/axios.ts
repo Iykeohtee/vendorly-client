@@ -10,63 +10,74 @@ const axiosInstance = axios.create({
   withCredentials: true,
 });
 
-// Request interceptor for debugging
-axiosInstance.interceptors.request.use(
-  (config) => {
-    if (!config.url?.includes("/auth/refresh")) {
-    }
-    return config;
-  },
-  (error) => {
-    return Promise.reject(error);
-  },
-);
+// 🔒 Refresh control
+let isRefreshing = false;
+let refreshSubscribers: ((value?: unknown) => void)[] = [];
 
-// Response interceptor for error handling and token refresh
+function onRefreshed() {
+  refreshSubscribers.forEach((cb) => cb());
+  refreshSubscribers = [];
+}
+
+function addSubscriber(cb: () => void) {
+  refreshSubscribers.push(cb);
+}
+
+// Response interceptor
 axiosInstance.interceptors.response.use(
   (response) => response,
   async (error) => {
     const originalRequest = error.config;
 
-    // Skip refresh for auth endpoints
-    const isLoginEndpoint = originalRequest.url?.includes("/auth/login");
-    const isRegisterEndpoint = originalRequest.url?.includes("/auth/register");
-    const isVerifyEndpoint =
+    const isAuthRoute =
+      originalRequest.url?.includes("/auth/login") ||
+      originalRequest.url?.includes("/auth/register") ||
       originalRequest.url?.includes("/auth/verify-email");
 
-    // Don't intercept auth endpoints except for refresh
-    if (isLoginEndpoint || isRegisterEndpoint || isVerifyEndpoint) {
+    if (isAuthRoute) {
       return Promise.reject(error);
     }
 
-    // Prevent infinite loop - don't retry refresh requests
+    // Prevent infinite loop
     if (originalRequest.url?.includes("/auth/refresh")) {
-      // Refresh failed - redirect to login
-      console.log("🔄 Refresh token failed, redirecting to login");
-      if (typeof window !== "undefined") {
-        window.location.href = "/login";
-      }
+      window.location.href = "/login";
       return Promise.reject(error);
     }
 
-    // If error is 401 and not already retrying
     if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;
 
+      // 🚀 If already refreshing → wait
+      if (isRefreshing) {
+        return new Promise((resolve) => {
+          addSubscriber(() => {
+            resolve(axiosInstance(originalRequest));
+          });
+        });
+      }
+
+      isRefreshing = true;
+
       try {
-        console.log("🔄 Attempting to refresh token...");
-        // Attempt to refresh tokens
+        console.log("🔄 Refreshing token...");
+
         await axiosInstance.post("/auth/refresh");
 
-        console.log("✅ Token refreshed, retrying original request");
-        // Retry original request
+        console.log("✅ Refresh success");
+
+        isRefreshing = false;
+        onRefreshed();
+
         return axiosInstance(originalRequest);
       } catch (refreshError) {
-        console.log("❌ Refresh failed, redirecting to login");
-        // Refresh failed, redirect to login
+        console.log("❌ Refresh failed");
+
+        isRefreshing = false;
+
         if (typeof window !== "undefined") {
           window.location.href = "/login";
         }
+
         return Promise.reject(refreshError);
       }
     }

@@ -4,248 +4,82 @@ A modern, mobile-first frontend for Vendorly - a WhatsApp-based e-commerce platf
 
 
 
-<!-- For useAuth with tanstack -->
+import axios from "axios";
 
-"use client";
+const apiUrl = process.env.NEXT_PUBLIC_API_URL;
 
-import { useDispatch, useSelector } from "react-redux";
-import { RootState, AppDispatch } from "@/redux/store";
-import {
-  setStore,
-  setLoading,
-  setError,
-  clearStore,
-  setSelectedProduct,
-  updateProductQuantity,
-  StoreData,
-  StoreProduct,
-} from "@/redux/slices/storeSlice";
-import { useToast } from "@/components/ui/Toast";
-import { storeService } from "@/app/services/store.service";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+const axiosInstance = axios.create({
+  baseURL: apiUrl,
+  headers: {
+    "Content-Type": "application/json",
+  },
+  withCredentials: true,
+});
 
-interface UseStoreReturn {
-  // State
-  currentStore: StoreData | null;
-  loading: boolean;
-  error: string | null;
-  selectedProduct: StoreProduct | null;
-
-  // Store actions
-  getStoreBySlug: (storeSlug: string) => Promise<StoreData | null>;
-  clearCurrentStore: () => void;
-
-  // Product actions
-  selectProduct: (product: StoreProduct | null) => void;
-  getProductById: (productId: string) => Promise<StoreProduct | null>;
-
-  // Category and filter helpers
-  getCategories: () => string[];
-  filterByCategory: (category: string) => StoreProduct[];
-  searchProducts: (query: string) => StoreProduct[];
-
-  // WhatsApp integration
-  createWhatsAppOrder: (product: StoreProduct, quantity?: number) => string;
-
-  // Status
-  isProductInStock: (productId: string) => boolean;
-  getProductQuantity: (productId: string) => number;
-}
-
-export const useStore = (): UseStoreReturn => {
-  const dispatch = useDispatch<AppDispatch>();
-  const queryClient = useQueryClient();
-  const { showToast } = useToast();
-
-  const { currentStore, selectedProduct } = useSelector(
-    (state: RootState) => state.store,
-  );
-
-  // Query for fetching store by slug
-  const storeQuery = useQuery({
-    queryKey: ["store"],
-    queryFn: async () => {
-      throw new Error("Store slug not provided");
-    },
-    enabled: false, // Disable automatic fetching
-    staleTime: 5 * 60 * 1000, // 5 minutes
-  });
-
-  /**
-   * Fetch store by slug (public endpoint)
-   */
-  const getStoreBySlug = async (
-    storeSlug: string,
-  ): Promise<StoreData | null> => {
-    dispatch(setLoading(true));
-
-    try {
-      // Use react-query to fetch/cache the store data
-      const data = await queryClient.fetchQuery({
-        queryKey: ["store", storeSlug],
-        queryFn: () => storeService.getStoreBySlug(storeSlug),
-        staleTime: 5 * 60 * 1000, // 5 minutes
-      });
-
-      dispatch(setStore(data));
-      return data;
-    } catch (error: any) {
-      const errorMessage =
-        error.response?.data?.message || "Failed to load store";
-
-      dispatch(setError(errorMessage));
-      showToast(errorMessage, "error");
-      return null;
-    } finally {
-      dispatch(setLoading(false));
+// Request interceptor for debugging
+axiosInstance.interceptors.request.use(
+  (config) => {
+    if (!config.url?.includes("/auth/refresh")) {
     }
-  };
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
+  },
+);
 
-  /**
-   * Clear current store from state
-   */
-  const clearCurrentStore = () => {
-    dispatch(clearStore());
-    // Also clear the query cache for store
-    queryClient.removeQueries({ queryKey: ["store"] });
-  };
+// Response interceptor for error handling and token refresh
+axiosInstance.interceptors.response.use(
+  (response) => response,
+  async (error) => {
+    const originalRequest = error.config;
 
-  /**
-   * Select a product for modal/view
-   */
-  const selectProduct = (product: StoreProduct | null) => {
-    dispatch(setSelectedProduct(product));
-  };
+    // Skip refresh for auth endpoints
+    const isLoginEndpoint = originalRequest.url?.includes("/auth/login");
+    const isRegisterEndpoint = originalRequest.url?.includes("/auth/register");
+    const isVerifyEndpoint =
+      originalRequest.url?.includes("/auth/verify-email");
 
-  /**
-   * Fetch single product by ID
-   */
-  const getProductById = async (
-    productId: string,
-  ): Promise<StoreProduct | null> => {
-    try {
-      // Use react-query to fetch/cache the product data
-      const data = await queryClient.fetchQuery({
-        queryKey: ["product", productId],
-        queryFn: () => storeService.getProductById(productId),
-        staleTime: 5 * 60 * 1000, // 5 minutes
-      });
-
-      return data;
-    } catch (error: any) {
-      showToast(
-        error.response?.data?.message || "Failed to load product",
-        "error",
-      );
-      return null;
+    // Don't intercept auth endpoints except for refresh
+    if (isLoginEndpoint || isRegisterEndpoint || isVerifyEndpoint) {
+      return Promise.reject(error);
     }
-  };
 
-  /**
-   * Get all unique categories from current store products
-   */
-  const getCategories = (): string[] => {
-    if (!currentStore) return [];
+    // Prevent infinite loop - don't retry refresh requests
+    if (originalRequest.url?.includes("/auth/refresh")) {
+      // Refresh failed - redirect to login
+      console.log("🔄 Refresh token failed, redirecting to login");
+      if (typeof window !== "undefined") {
+        window.location.href = "/login";
+      }
+      return Promise.reject(error);
+    }
 
-    const categories = new Set(currentStore.products.map((p) => p.category));
-    return Array.from(categories);
-  };
+    // If error is 401 and not already retrying
+    if (error.response?.status === 401 && !originalRequest._retry) {
+      originalRequest._retry = true;
 
-  /**
-   * Filter products by category
-   */
-  const filterByCategory = (category: string): StoreProduct[] => {
-    if (!currentStore) return [];
+      try {
+        console.log("🔄 Attempting to refresh token...");
+        // Attempt to refresh tokens
+        await axiosInstance.post("/auth/refresh");
 
-    if (category === "all") return currentStore.products;
+        console.log("✅ Token refreshed, retrying original request");
+        // Retry original request
+        return axiosInstance(originalRequest);
+      } catch (refreshError) {
+        console.log("❌ Refresh failed, redirecting to login");
+        // Refresh failed, redirect to login
+        if (typeof window !== "undefined") {
+          window.location.href = "/login";
+        }
+        return Promise.reject(refreshError);
+      }
+    }
 
-    return currentStore.products.filter(
-      (p) => p.category.toLowerCase() === category.toLowerCase(),
-    );
-  };
+    return Promise.reject(error);
+  },
+);
 
-  /**
-   * Search products by name or description
-   */
-  const searchProducts = (query: string): StoreProduct[] => {
-    if (!currentStore || !query.trim()) return currentStore?.products || [];
-
-    const searchTerm = query.toLowerCase().trim();
-
-    return currentStore.products.filter(
-      (p) =>
-        p.name.toLowerCase().includes(searchTerm) ||
-        p.description.toLowerCase().includes(searchTerm) ||
-        p.tags.some((tag) => tag.toLowerCase().includes(searchTerm)),
-    );
-  };
-
-  /**
-   * Create WhatsApp message for ordering
-   */
-  const createWhatsAppOrder = (
-    product: StoreProduct,
-    quantity: number = 1,
-  ): string => {
-    const storeUrl = `${window.location.origin}/${currentStore?.storeSlug}`;
-
-    const message =
-      `Hello, I'm interested in ordering:%0A%0A` +
-      `*Product:* ${product.name}%0A` +
-      `*Price:* ₦${product.price.toLocaleString()}%0A` +
-      `*Quantity:* ${quantity}%0A` +
-      `*Store:* ${storeUrl}%0A%0A` +
-      `My delivery location: [Please add your address]`;
-
-    return `https://wa.me/?text=${message}`;
-  };
-
-  /**
-   * Check if product is in stock
-   */
-  const isProductInStock = (productId: string): boolean => {
-    if (!currentStore) return false;
-
-    const product = currentStore.products.find((p) => p.id === productId);
-    return product ? product.quantity > 0 : false;
-  };
-
-  /**
-   * Get product quantity
-   */
-  const getProductQuantity = (productId: string): number => {
-    if (!currentStore) return 0;
-
-    const product = currentStore.products.find((p) => p.id === productId);
-    return product?.quantity || 0;
-  };
-
-  return {
-    // State
-    currentStore,
-    loading: storeQuery.isFetching || storeQuery.isLoading,
-    error: storeQuery.error ? (storeQuery.error as Error).message : null,
-    selectedProduct,
-
-    // Store actions
-    getStoreBySlug,
-    clearCurrentStore,
-
-    // Product actions
-    selectProduct,
-    getProductById,
-
-    // Category and filter helpers
-    getCategories,
-    filterByCategory,
-    searchProducts,
-
-    // WhatsApp integration
-    createWhatsAppOrder,
-
-    // Status
-    isProductInStock,
-    getProductQuantity,
-  };
-};
+export default axiosInstance;
 
