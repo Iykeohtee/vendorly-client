@@ -36,6 +36,7 @@ export const useAuth = () => {
     "/reset-password",
     "/verify-email",
     "/verifyEmail",
+    "/reset-password/validate",
   ];
 
   const isAuthPage = authPages.includes(pathname);
@@ -75,12 +76,7 @@ export const useAuth = () => {
       password,
     });
 
-    console.log("✅ Login successful, response:", response);
-    console.log("📦 Response headers:", response.headers);
-
     dispatch(setCredentials({ user: response.data.user }));
-
-    // await new Promise(resolve => setTimeout(resolve, 10000));
 
     return response.data;
   };
@@ -144,6 +140,45 @@ export const useAuth = () => {
     }
   };
 
+  const forgotPassword = async (
+    email: string,
+  ): Promise<{ success: boolean; message: string }> => {
+    try {
+      const response = await axiosInstance.post("/auth/forgot-password", {
+        email,
+      });
+      return {
+        success: true,
+        message:
+          response.data.message || "Password reset link sent to your email!",
+      };
+    } catch (error: any) {
+      const errorMessage =
+        error.response?.data?.message || "Failed to send reset link";
+      return { success: false, message: errorMessage };
+    }
+  };
+
+  const resetPassword = async (
+    token: string,
+    password: string,
+  ): Promise<{ success: boolean; message: string }> => {
+    try {
+      const response = await axiosInstance.post("/auth/reset-password", {
+        token,
+        password,
+      });
+      return {
+        success: true,
+        message: response.data.message || "Password reset successful!",
+      };
+    } catch (error: any) {
+      const errorMessage =
+        error.response?.data?.message || "Failed to reset password";
+      return { success: false, message: errorMessage };
+    }
+  };
+
   const handleLogout = async () => {
     try {
       await axiosInstance.post("/auth/logout");
@@ -176,5 +211,7 @@ export const useAuth = () => {
     resendVerificationEmail,
     refreshTokens,
     checkAuthStatus,
+    forgotPassword,
+    resetPassword,
   };
 };

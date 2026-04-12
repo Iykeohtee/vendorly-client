@@ -91,6 +91,7 @@ export default function RootLayout({
     "/verify-email",
     "/forgot-password",
     "/reset-password",
+    "/reset-password/validate",
     "/verifyEmail",
     "/dashboard/products",
     "/dashboard/products/addProduct",

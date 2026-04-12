@@ -23,31 +23,49 @@ function addSubscriber(cb: () => void) {
   refreshSubscribers.push(cb);
 }
 
+// Helper function to check if URL is an auth endpoint that shouldn't trigger refresh
+const isAuthEndpoint = (url: string | undefined): boolean => {
+  if (!url) return false;
+  
+  const authPaths = [
+    "/auth/login",
+    "/auth/signup",
+    "/auth/register",
+    "/auth/verify-email",
+    "/auth/forgot-password",
+    "/auth/reset-password",
+    "/auth/refresh",
+    "/auth/logout",
+    "/auth/me",
+  ];
+  
+  return authPaths.some(path => url.includes(path));
+};
+
 // Response interceptor
 axiosInstance.interceptors.response.use(
   (response) => response,
   async (error) => {
     const originalRequest = error.config;
 
-    const isAuthRoute =
-      originalRequest.url?.includes("/auth/login") ||
-      originalRequest.url?.includes("/auth/register") ||
-      originalRequest.url?.includes("/auth/verify-email");
-
-    if (isAuthRoute) {
+    // Skip refresh for all auth-related endpoints
+    if (isAuthEndpoint(originalRequest.url)) {
       return Promise.reject(error);
     }
 
-    // Prevent infinite loop
+    // Prevent infinite loop on refresh endpoint itself
     if (originalRequest.url?.includes("/auth/refresh")) {
-      window.location.href = "/login";
+      if (typeof window !== "undefined") {
+        window.location.href = "/login";
+      }
       return Promise.reject(error);
     }
 
+    // Only handle 401 errors
     if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;
 
-      // 🚀 If already refreshing → wait
+      // If already refreshing, wait for it to complete
       if (isRefreshing) {
         return new Promise((resolve) => {
           addSubscriber(() => {
@@ -60,9 +78,7 @@ axiosInstance.interceptors.response.use(
 
       try {
         console.log("🔄 Refreshing token...");
-
         await axiosInstance.post("/auth/refresh");
-
         console.log("✅ Refresh success");
 
         isRefreshing = false;
@@ -71,10 +87,13 @@ axiosInstance.interceptors.response.use(
         return axiosInstance(originalRequest);
       } catch (refreshError) {
         console.log("❌ Refresh failed");
-
         isRefreshing = false;
 
-        if (typeof window !== "undefined") {
+        // Clear any stored auth data
+        localStorage.removeItem("accessToken");
+        
+        // Redirect to login only if not already there
+        if (typeof window !== "undefined" && !window.location.pathname.includes("/login")) {
           window.location.href = "/login";
         }
 
