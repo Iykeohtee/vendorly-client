@@ -23,6 +23,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/useAuth";
+import { NotificationBell } from "@/components/notifications/NotificationBell";
 
 // Shadcn UI components
 import {
@@ -375,8 +376,16 @@ export default function DashboardLayout({
             {sidebarOpen && user && (
               <div className="px-4 pb-4 pt-2">
                 <div className="flex items-center gap-3 px-3 py-2 rounded-lg bg-gray-50">
-                  <div className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center flex-shrink-0">
-                    <User className="h-5 w-5 text-gray-600" />
+                  <div className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center flex-shrink-0 overflow-hidden">
+                    {user.profileImage ? (
+                      <img
+                        src={user.profileImage}
+                        alt={user.fullName}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <User className="h-5 w-5 text-gray-600" />
+                    )}
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium text-gray-800 truncate">
@@ -454,6 +463,9 @@ export default function DashboardLayout({
                 {user?.vendor?.storeSlug && (
                   <div className="hidden md:block w-px h-6 bg-gray-200" />
                 )}
+
+                {/* Notification Bell - ADDED HERE */}
+                <NotificationBell />
 
                 {/* Explore Marketplace Button - Desktop */}
                 <Link href="/explore" className="hidden md:block">

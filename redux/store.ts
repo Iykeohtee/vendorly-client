@@ -7,6 +7,7 @@ import customerReducer from './slices/customerSlice';
 import financeReducer from './slices/financeSlice';
 import profileReducer from './slices/profileSlice';
 import exploreReducer from './slices/exploreSlice'
+import notificationReducer from './slices/notificationSlice';
 
 
 export const store = configureStore({
@@ -18,7 +19,8 @@ export const store = configureStore({
     customer: customerReducer,
     finance: financeReducer,
     profile: profileReducer,
-    explore: exploreReducer
+    explore: exploreReducer,
+    notifications: notificationReducer
   },
 });
 

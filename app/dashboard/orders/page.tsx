@@ -45,8 +45,7 @@ import {
 } from "@/components/ui/select";
 import UpdateOrderModal from "@/components/orders/UpdateOrderModal";
 import OrderDetailsModal from "@/components/orders/OrderDetailModal";
-import { toast } from "sonner";  
-
+import { toast } from "sonner";
 
 // Format currency
 const formatCurrency = (amount: number = 0) => {
@@ -441,69 +440,163 @@ const OrdersPage = () => {
 
           {/* Pagination */}
           {filteredOrders.length > 0 && (
-            <div className="flex items-center justify-between px-6 py-4 border-t">
-              <div className="flex items-center gap-2">
-                <span className="text-sm text-muted-foreground">
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-4 px-4 sm:px-6 py-4 border-t">
+              {/* Left side - Showing X to Y of Z orders & Page size selector */}
+              <div className="flex flex-col sm:flex-row items-center gap-3 w-full sm:w-auto">
+                <span className="text-sm text-muted-foreground whitespace-nowrap">
                   Showing {(currentPage - 1) * pageSize + 1} to{" "}
                   {Math.min(currentPage * pageSize, filteredOrders.length)} of{" "}
                   {filteredOrders.length} orders
                 </span>
-                <Select
-                  value={pageSize.toString()}
-                  onValueChange={(value: string) => {
-                    setPageSize(Number(value));
-                    setCurrentPage(1);
-                  }}
-                >
-                  <SelectTrigger className="w-20 h-8">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="10">10</SelectItem>
-                    <SelectItem value="20">20</SelectItem>
-                    <SelectItem value="50">50</SelectItem>
-                    <SelectItem value="100">100</SelectItem>
-                  </SelectContent>
-                </Select>
+                <div className="flex items-center gap-2">
+                  <span className="text-sm text-muted-foreground hidden sm:inline">
+                    Show
+                  </span>
+                  <Select
+                    value={pageSize.toString()}
+                    onValueChange={(value: string) => {
+                      setPageSize(Number(value));
+                      setCurrentPage(1);
+                    }}
+                  >
+                    <SelectTrigger className="w-20 h-8">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="10">10</SelectItem>
+                      <SelectItem value="20">20</SelectItem>
+                      <SelectItem value="50">50</SelectItem>
+                      <SelectItem value="100">100</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <span className="text-sm text-muted-foreground hidden sm:inline">
+                    per page
+                  </span>
+                </div>
               </div>
 
-              <div className="flex items-center gap-2">
+              {/* Right side - Pagination controls */}
+              <div className="flex items-center justify-center gap-1 sm:gap-2 w-full sm:w-auto">
+                {/* First Page Button */}
                 <Button
                   variant="outline"
                   size="sm"
                   onClick={() => handlePageChange(1)}
                   disabled={currentPage === 1}
+                  className="h-8 w-8 p-0 sm:h-9 sm:w-9"
                 >
-                  <ChevronsLeft className="h-4 w-4" />
+                  <ChevronsLeft className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                 </Button>
+
+                {/* Previous Button */}
                 <Button
                   variant="outline"
                   size="sm"
                   onClick={() => handlePageChange(currentPage - 1)}
                   disabled={currentPage === 1}
+                  className="h-8 w-8 p-0 sm:h-9 sm:w-9"
                 >
-                  <ChevronLeft className="h-4 w-4" />
+                  <ChevronLeft className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                 </Button>
 
-                <span className="text-sm px-3 py-1 bg-muted rounded-md">
-                  Page {currentPage} of {totalPages}
-                </span>
+                {/* Page Indicator - Mobile friendly */}
+                <div className="flex items-center gap-1 sm:gap-2">
+                  {/* Show first page on mobile if not too far */}
+                  {currentPage > 3 && totalPages > 5 && (
+                    <>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handlePageChange(1)}
+                        className="hidden sm:flex h-8 w-8 p-0"
+                      >
+                        1
+                      </Button>
+                      {currentPage > 4 && (
+                        <span className="text-sm text-muted-foreground hidden sm:inline">
+                          ...
+                        </span>
+                      )}
+                    </>
+                  )}
 
+                  {/* Page numbers - responsive */}
+                  {(() => {
+                    const pages = [];
+                    const maxVisible = window.innerWidth < 640 ? 3 : 5;
+                    let startPage = Math.max(
+                      1,
+                      currentPage - Math.floor(maxVisible / 2),
+                    );
+                    let endPage = Math.min(
+                      totalPages,
+                      startPage + maxVisible - 1,
+                    );
+
+                    if (endPage - startPage + 1 < maxVisible) {
+                      startPage = Math.max(1, endPage - maxVisible + 1);
+                    }
+
+                    for (let i = startPage; i <= endPage; i++) {
+                      pages.push(
+                        <Button
+                          key={i}
+                          variant={currentPage === i ? "default" : "outline"}
+                          size="sm"
+                          onClick={() => handlePageChange(i)}
+                          className={`h-8 w-8 p-0 sm:h-9 sm:w-9 ${
+                            currentPage === i
+                              ? "bg-primary text-primary-foreground"
+                              : ""
+                          }`}
+                        >
+                          {i}
+                        </Button>,
+                      );
+                    }
+                    return pages;
+                  })()}
+
+                  {/* Show last page on mobile if not too far */}
+                  {currentPage < totalPages - 2 && totalPages > 5 && (
+                    <>
+                      {currentPage < totalPages - 3 && (
+                        <span className="text-sm text-muted-foreground hidden sm:inline">
+                          ...
+                        </span>
+                      )}
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handlePageChange(totalPages)}
+                        className="hidden sm:flex h-8 w-8 p-0"
+                      >
+                        {totalPages}
+                      </Button>
+                    </>
+                  )}
+                </div>
+
+                {/* Next Button */}
                 <Button
                   variant="outline"
                   size="sm"
                   onClick={() => handlePageChange(currentPage + 1)}
                   disabled={currentPage === totalPages}
+                  className="h-8 w-8 p-0 sm:h-9 sm:w-9"
                 >
-                  <ChevronRight className="h-4 w-4" />
+                  <ChevronRight className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                 </Button>
+
+                {/* Last Page Button */}
                 <Button
                   variant="outline"
                   size="sm"
                   onClick={() => handlePageChange(totalPages)}
                   disabled={currentPage === totalPages}
+                  className="h-8 w-8 p-0 sm:h-9 sm:w-9"
                 >
-                  <ChevronsRight className="h-4 w-4" />
+                  <ChevronsRight className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                 </Button>
               </div>
             </div>
