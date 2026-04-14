@@ -464,7 +464,7 @@ export default function DashboardLayout({
                   <div className="hidden md:block w-px h-6 bg-gray-200" />
                 )}
 
-                {/* Notification Bell - ADDED HERE */}
+                {/* Notification Bell */}
                 <NotificationBell />
 
                 {/* Explore Marketplace Button - Desktop */}
