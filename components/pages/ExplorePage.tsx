@@ -224,6 +224,8 @@ export default function Explore() {
         break;
     }
 
+    console.log(products) 
+
     return (
       <div className="min-h-screen bg-gradient-to-b from-[#f9fafb] to-white">
         <ExploreHeader
@@ -296,7 +298,7 @@ export default function Explore() {
       />
 
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-12">
-        {/* Trending Today - Horizontal Scroll with Arrows */}
+        {/* Trending Today */}
         <section>
           <SectionHeader
             icon={Flame}

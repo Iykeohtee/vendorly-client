@@ -259,12 +259,21 @@ const ProductCard = ({
           </div>
         </div>
 
-        {/* Category Tag */}
-        {product.category && (
-          <div className="inline-block px-2 py-1 bg-gray-100 rounded-full text-xs text-gray-600">
-            {product.category}
-          </div>
-        )}
+        {/* Category Tags */}
+        {product.category &&
+          Array.isArray(product.category) &&
+          product.category.length > 0 && (
+            <div className="flex flex-wrap gap-1 mt-2">
+              {product.category.map((cat: string, index: number) => (
+                <span
+                  key={index}
+                  className="inline-block px-2 py-1 bg-gray-100 rounded-full text-xs text-gray-600"
+                >
+                  {cat}
+                </span>
+              ))}
+            </div>
+          )}
 
         {/* Mobile Actions (visible on small screens) */}
         <div className="flex gap-2 mt-4 sm:hidden">
@@ -557,8 +566,7 @@ export default function ProductsPage() {
                     onClick={() => setSearchTerm("")}
                     className="hover:text-green-900"
                   >
-                    {/* 1472 */}
-                    ×
+                    {/* 1472 */}×
                   </button>
                 </span>
               )}

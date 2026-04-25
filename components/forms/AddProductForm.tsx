@@ -10,13 +10,19 @@ import Button from "@/components/ui/Button";
 import Input from "@/components/ui/Input";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/Card";
 import { useProduct } from "@/hooks/useProducts";
-import { Upload, X, Image as ImageIcon, ChevronDown, Check } from "lucide-react";
+import {
+  Upload,
+  X,
+  Image as ImageIcon,
+  ChevronDown,
+  Check,
+} from "lucide-react";
 
 const productSchema = z.object({
   name: z.string().min(1, "Product name is required"),
   description: z.string().min(10, "Description must be at least 10 characters"),
   price: z.number().min(0, "Price must be positive"),
-  categories: z.array(z.string()).min(1, "At least one category is required"),
+  category: z.array(z.string()).min(1, "At least one category is required"),
   quantity: z.number().min(0, "Quantity must be positive"),
   images: z
     .any()
@@ -68,13 +74,13 @@ export default function AddProductForm() {
       name: "",
       description: "",
       price: 0,
-      categories: [],
+      category: [],
       quantity: 0,
       images: [],
     },
   });
 
-  const selectedCategories = watch("categories") || [];
+  const selectedCategories = watch("category") || [];
 
   // Clean up previews when component unmounts
   useEffect(() => {
@@ -117,24 +123,29 @@ export default function AddProductForm() {
 
   const handleCategoryToggle = (categoryValue: string) => {
     const currentCategories = [...selectedCategories];
-    
+
     if (currentCategories.includes(categoryValue)) {
       // Remove category
-      const newCategories = currentCategories.filter(c => c !== categoryValue);
-      setValue("categories", newCategories);
+      const newCategories = currentCategories.filter(
+        (c) => c !== categoryValue,
+      );
+      setValue("category", newCategories);
     } else {
       // Add category - check limit
       if (currentCategories.length >= MAX_CATEGORIES) {
-        showToast(`You can only select up to ${MAX_CATEGORIES} categories`, "error");
+        showToast(
+          `You can only select up to ${MAX_CATEGORIES} categories`,
+          "error",
+        );
         return;
       }
-      setValue("categories", [...currentCategories, categoryValue]);
+      setValue("category", [...currentCategories, categoryValue]);
     }
   };
 
   const removeCategory = (categoryValue: string) => {
-    const newCategories = selectedCategories.filter(c => c !== categoryValue);
-    setValue("categories", newCategories);
+    const newCategories = selectedCategories.filter((c) => c !== categoryValue);
+    setValue("category", newCategories);
   };
 
   const onSubmit = async (data: ProductFormData) => {
@@ -148,13 +159,13 @@ export default function AddProductForm() {
       formData.append("price", data.price.toString());
       formData.append("quantity", data.quantity.toString());
       // Send categories as a JSON string (backend should parse)
-      formData.append("categories", JSON.stringify(data.categories));
+      formData.append("category", JSON.stringify(data.category));
 
       // Append each image file
       selectedFiles.forEach((file) => {
         formData.append("images", file);
       });
-  
+
       // Send everything in one request to your backend
       await createProduct.mutateAsync(formData);
 
@@ -178,7 +189,7 @@ export default function AddProductForm() {
   const getSelectedCategoriesDisplay = () => {
     if (selectedCategories.length === 0) return "Select categories";
     const selectedLabels = selectedCategories.map(
-      cat => categories.find(c => c.value === cat)?.label || cat
+      (cat) => categories.find((c) => c.value === cat)?.label || cat,
     );
     return selectedLabels.join(", ");
   };
@@ -292,14 +303,17 @@ export default function AddProductForm() {
           {/* Categories Multi-Select Dropdown */}
           <div className="space-y-2">
             <label className="block text-sm font-medium text-gray-700">
-              Categories <span className="text-xs text-gray-500">(max {MAX_CATEGORIES})</span>
+              Categories{" "}
+              <span className="text-xs text-gray-500">
+                (max {MAX_CATEGORIES})
+              </span>
             </label>
-            
+
             {/* Selected Categories Tags */}
             {selectedCategories.length > 0 && (
               <div className="flex flex-wrap gap-2 mb-2">
                 {selectedCategories.map((cat) => {
-                  const category = categories.find(c => c.value === cat);
+                  const category = categories.find((c) => c.value === cat);
                   return (
                     <span
                       key={cat}
@@ -318,32 +332,44 @@ export default function AddProductForm() {
                 })}
               </div>
             )}
-            
+
             <div className="relative">
               <button
                 type="button"
                 onClick={() => setIsCategoryOpen(!isCategoryOpen)}
                 className="w-full flex items-center justify-between px-3 py-2 text-sm border border-gray-300 rounded-md bg-white shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all"
               >
-                <span className={selectedCategories.length > 0 ? "text-gray-900" : "text-gray-400"}>
-                  {selectedCategories.length === 0 
-                    ? "Select categories" 
+                <span
+                  className={
+                    selectedCategories.length > 0
+                      ? "text-gray-900"
+                      : "text-gray-400"
+                  }
+                >
+                  {selectedCategories.length === 0
+                    ? "Select categories"
                     : `${selectedCategories.length} category${selectedCategories.length !== 1 ? "ies" : ""} selected`}
                 </span>
-                <ChevronDown className={`h-4 w-4 text-gray-400 transition-transform duration-200 ${isCategoryOpen ? "rotate-180" : ""}`} />
+                <ChevronDown
+                  className={`h-4 w-4 text-gray-400 transition-transform duration-200 ${isCategoryOpen ? "rotate-180" : ""}`}
+                />
               </button>
-              
+
               {isCategoryOpen && (
                 <>
-                  <div 
+                  <div
                     className="fixed inset-0 z-10"
                     onClick={() => setIsCategoryOpen(false)}
                   />
                   <div className="absolute z-20 w-full mt-1 bg-white border border-gray-200 rounded-md shadow-lg max-h-60 overflow-y-auto">
                     {categories.map((category) => {
-                      const isSelected = selectedCategories.includes(category.value);
-                      const isDisabled = !isSelected && selectedCategories.length >= MAX_CATEGORIES;
-                      
+                      const isSelected = selectedCategories.includes(
+                        category.value,
+                      );
+                      const isDisabled =
+                        !isSelected &&
+                        selectedCategories.length >= MAX_CATEGORIES;
+
                       return (
                         <button
                           key={category.value}
@@ -352,15 +378,19 @@ export default function AddProductForm() {
                           disabled={isDisabled}
                           className={`
                             w-full flex items-center justify-between px-3 py-2 text-sm transition-colors
-                            ${isSelected 
-                              ? "bg-green-50 text-green-600" 
-                              : isDisabled
-                                ? "text-gray-400 cursor-not-allowed"
-                                : "text-gray-700 hover:bg-green-50"}
+                            ${
+                              isSelected
+                                ? "bg-green-50 text-green-600"
+                                : isDisabled
+                                  ? "text-gray-400 cursor-not-allowed"
+                                  : "text-gray-700 hover:bg-green-50"
+                            }
                           `}
                         >
                           <span>{category.label}</span>
-                          {isSelected && <Check className="h-4 w-4 text-green-600" />}
+                          {isSelected && (
+                            <Check className="h-4 w-4 text-green-600" />
+                          )}
                         </button>
                       );
                     })}
@@ -368,13 +398,14 @@ export default function AddProductForm() {
                 </>
               )}
             </div>
-            {errors.categories && (
+            {errors.category && (
               <p className="text-red-500 text-sm mt-1">
-                {errors.categories.message}
+                {errors.category.message}
               </p>
             )}
             <p className="text-xs text-gray-500 mt-1">
-              You can select up to {MAX_CATEGORIES} categories for better product discoverability
+              You can select up to {MAX_CATEGORIES} categories for better
+              product discoverability
             </p>
           </div>
 

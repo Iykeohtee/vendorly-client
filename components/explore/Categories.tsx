@@ -1,13 +1,14 @@
 "use client";
 
+import { useMemo } from "react"; 
 import {
   Sparkles,
+  Laugh,
   Zap,
   Award,
-  Package,
-  Heart,
   TrendingUp,
   Star,
+  ToyBrick,
   Camera,
   Book,
   Music,
@@ -45,7 +46,9 @@ const categoryIcons: Record<string, any> = {
   Furniture: Home,
   Automotive: Car,
   Baby: Baby,
-  Pets: PawPrint,
+  "Pet Supplies": PawPrint,
+  "Toys & Games": ToyBrick,
+  "Beauty & Personal Care": Laugh,
   Sports: Trophy,
   Food: Cookie,
   Beauty: HeartPulse,
@@ -58,7 +61,7 @@ const getCategoryIcon = (categoryName: string) => {
 };
 
 interface Category {
-  name: string;
+  name: string | string[]; 
   count: number;
 }
 
@@ -93,11 +96,46 @@ export const Categories = ({
     );
   }
 
-  // Calculate total products from all categories
-  const totalProducts = categories.reduce((sum, cat) => sum + cat.count, 0);
+  // ✅ Process categories to handle array names
+  const processedCategories = useMemo(() => {
+    const categoryMap = new Map<string, number>();
 
-  // Create "All" category and combine with API categories
-  const allCategories = [{ name: "All", count: totalProducts }, ...categories];
+    categories.forEach((cat) => {
+      // If name is an array (from your backend)
+      if (Array.isArray(cat.name)) {
+        cat.name.forEach((categoryName: string) => {
+          if (categoryName && categoryName.trim() !== "") {
+            categoryMap.set(
+              categoryName,
+              (categoryMap.get(categoryName) || 0) + cat.count,
+            );
+          }
+        });
+      }
+      // If name is a string (normal case)
+      else if (typeof cat.name === "string" && cat.name.trim() !== "") {
+        categoryMap.set(cat.name, (categoryMap.get(cat.name) || 0) + cat.count);
+      }
+    });
+
+    // Convert to array format
+    return Array.from(categoryMap.entries()).map(([name, count]) => ({
+      name,
+      count,
+    }));
+  }, [categories]);
+
+  // Calculate total products from processed categories
+  const totalProducts = processedCategories.reduce(
+    (sum, cat) => sum + cat.count,
+    0,
+  );
+
+  // Create "All" category and combine with processed categories
+  const allCategories = [
+    { name: "All", count: totalProducts },
+    ...processedCategories,
+  ];
 
   return (
     <section className="py-6 border-b border-[#e5e7eb] bg-white">
