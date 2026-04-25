@@ -157,11 +157,6 @@ export const Categories = ({
               >
                 <Icon className="h-4 w-4" />
                 {cat.name}
-                <span
-                  className={`text-xs ${isActive ? "text-white/70" : "text-[#9ca3af]"}`}
-                >
-                  ({cat.count})
-                </span>
               </button>
             );
           })}
