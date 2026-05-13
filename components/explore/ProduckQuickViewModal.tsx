@@ -49,7 +49,7 @@ export const ProductQuickViewModal = ({
   const { createOrder, isCreating } = useOrder();
 
   const images =
-    product?.images?.filter((img) => img?.startsWith("http")) || [];
+    product?.images?.filter((img) => img?.url?.startsWith("http")) || [];
   const hasMultipleImages = images.length > 1;
 
   useEffect(() => {
@@ -202,7 +202,7 @@ export const ProductQuickViewModal = ({
                       </div>
                     )}
                     <img
-                      src={images[currentImageIndex]}
+                      src={images[currentImageIndex]?.url}
                       alt={`${product.name} - Image ${currentImageIndex + 1}`}
                       className={`max-w-full max-h-full object-contain rounded-lg transition-opacity duration-300 ${
                         isImageLoading ? "opacity-0" : "opacity-100"
@@ -252,7 +252,7 @@ export const ProductQuickViewModal = ({
                       }`}
                     >
                       <img
-                        src={img}
+                        src={img?.url}
                         alt={`Thumbnail ${idx + 1}`}
                         className="w-full h-full object-cover"
                       />

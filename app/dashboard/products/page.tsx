@@ -436,7 +436,7 @@ export default function ProductsPage() {
       try {
         await deleteProduct.mutateAsync(productId);
       } catch (error) {
-        // showToast("Failed to delete product. Please try again.", "error");  
+        toast.error("Failed to delete product. Please try again.", { position: 'top-center'});  
       }
     }
   };

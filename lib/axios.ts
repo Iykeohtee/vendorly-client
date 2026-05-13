@@ -1,4 +1,10 @@
 import axios from "axios";
+import {
+  clearAuthTokens,
+  getAccessToken,
+  getRefreshToken,
+  storeAuthTokens,
+} from "@/lib/authTokens";
 
 const apiUrl = process.env.NEXT_PUBLIC_API_URL;
 
@@ -10,7 +16,6 @@ const axiosInstance = axios.create({
   withCredentials: true,
 });
 
-// 🔒 Refresh control
 let isRefreshing = false;
 let refreshSubscribers: ((value?: unknown) => void)[] = [];
 
@@ -23,8 +28,7 @@ function addSubscriber(cb: () => void) {
   refreshSubscribers.push(cb);
 }
 
-// Helper function to check if URL is an auth endpoint that shouldn't trigger refresh
-const isAuthEndpoint = (url: string | undefined): boolean => {
+const isPublicAuthEndpoint = (url: string | undefined): boolean => {
   if (!url) return false;
   
   const authPaths = [
@@ -36,11 +40,23 @@ const isAuthEndpoint = (url: string | undefined): boolean => {
     "/auth/reset-password",
     "/auth/refresh",
     "/auth/logout",
-    "/auth/me",
   ];
   
-  return authPaths.some(path => url.includes(path));
+  return authPaths.some((path) => url.includes(path));
 };
+
+axiosInstance.interceptors.request.use((config) => {
+  if (isPublicAuthEndpoint(config.url)) {
+    return config;
+  }
+
+  const accessToken = getAccessToken();
+  if (accessToken && !config.headers.Authorization) {
+    config.headers.Authorization = `Bearer ${accessToken}`;
+  }
+
+  return config;
+});
 
 // Response interceptor
 axiosInstance.interceptors.response.use(
@@ -48,8 +64,8 @@ axiosInstance.interceptors.response.use(
   async (error) => {
     const originalRequest = error.config;
 
-    // Skip refresh for all auth-related endpoints
-    if (isAuthEndpoint(originalRequest.url)) {
+    // Skip refresh for public auth endpoints.
+    if (isPublicAuthEndpoint(originalRequest.url)) {
       return Promise.reject(error);
     }
 
@@ -77,23 +93,32 @@ axiosInstance.interceptors.response.use(
       isRefreshing = true;
 
       try {
-        console.log("🔄 Refreshing token...");
-        await axiosInstance.post("/auth/refresh");
-        console.log("✅ Refresh success");
+        const refreshToken = getRefreshToken();
+        const refreshResponse = await axiosInstance.post(
+          "/auth/refresh",
+          refreshToken ? { refreshToken } : undefined,
+        );
+        storeAuthTokens(refreshResponse.data?.token);
 
         isRefreshing = false;
         onRefreshed();
 
+        const nextAccessToken = getAccessToken();
+        if (nextAccessToken) {
+          originalRequest.headers.Authorization = `Bearer ${nextAccessToken}`;
+        }
+
         return axiosInstance(originalRequest);
       } catch (refreshError) {
-        console.log("❌ Refresh failed");
         isRefreshing = false;
 
-        // Clear any stored auth data
-        localStorage.removeItem("accessToken");
+        clearAuthTokens();
         
         // Redirect to login only if not already there
-        if (typeof window !== "undefined" && !window.location.pathname.includes("/login")) {
+        if (
+          typeof window !== "undefined" &&
+          !window.location.pathname.includes("/login")
+        ) {
           window.location.href = "/login";
         }
 

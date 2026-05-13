@@ -9,8 +9,21 @@ import {
 } from "@/redux/slices/authSlice";
 import { User } from "@/types/user";
 import axiosInstance from "@/lib/axios";
+import {
+  clearAuthTokens,
+  getRefreshToken,
+  storeAuthTokens,
+} from "@/lib/authTokens";
 import { useState, useEffect } from "react";
 import { usePathname } from "next/navigation";
+
+type AuthResponse = {
+  user: User;
+  token?: {
+    accessToken?: string;
+    refreshToken?: string;
+  };
+};
 
 export const useAuth = () => {
   const dispatch = useDispatch<AppDispatch>();
@@ -71,13 +84,13 @@ export const useAuth = () => {
     email: string,
     password: string,
   ): Promise<{ user: User }> => {
-    const response = await axiosInstance.post<{ user: User }>("/auth/login", {
+    const response = await axiosInstance.post<AuthResponse>("/auth/login", {
       email,
       password,
     });
 
+    storeAuthTokens(response.data.token);
     dispatch(setCredentials({ user: response.data.user }));
-
     return response.data;
   };
 
@@ -94,10 +107,11 @@ export const useAuth = () => {
     if (role === "VENDOR") {
       payload.storeName = storeName;
     }
-    const response = await axiosInstance.post<{ user: User }>(
+    const response = await axiosInstance.post<AuthResponse>(
       "/auth/register",
       payload,
     );
+    storeAuthTokens(response.data.token);
     dispatch(setCredentials({ user: response.data.user }));
     return response.data;
   };
@@ -182,16 +196,23 @@ export const useAuth = () => {
   const handleLogout = async () => {
     try {
       await axiosInstance.post("/auth/logout");
+      clearAuthTokens();
       dispatch(logout());
     } catch (error) {
       console.error("Logout error:", error);
+      clearAuthTokens();
       dispatch(logout());
     }
   };
 
   const refreshTokens = async () => {
     try {
-      const response = await axiosInstance.post("/auth/refresh");
+      const refreshToken = getRefreshToken();
+      const response = await axiosInstance.post(
+        "/auth/refresh",
+        refreshToken ? { refreshToken } : undefined,
+      );
+      storeAuthTokens(response.data.token);
       dispatch(setCredentials({ user: response.data.user }));
       return true;
     } catch (error) {
