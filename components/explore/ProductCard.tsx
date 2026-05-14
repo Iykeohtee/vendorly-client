@@ -126,7 +126,7 @@ export const ProductCard = ({
         <div className="absolute bottom-1.5 left-1.5 flex items-center gap-0.5 bg-black/50 backdrop-blur-sm rounded-full px-1.5 py-0.5">
           <Eye className="h-2 w-2 text-white" />
           <span className="text-[8px] font-medium text-white">
-            {product?.analytics?.views || 0}
+            {Math.floor(product?.analytics?.views!) || 0}
           </span>
         </div>
 
